@@ -81,7 +81,6 @@ export default function LoginPage() {
                 type="password"
                 placeholder="••••••••"
                 required
-                minLength={6}
                 disabled={loading}
               />
             </div>
