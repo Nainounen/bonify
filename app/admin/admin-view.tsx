@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Trash2, Users, Wifi, Smartphone, AlertTriangle, RefreshCw, Palette, Check, Download, LayoutDashboard, Trophy } from 'lucide-react'
+import { Trash2, Users, Wifi, Smartphone, AlertTriangle, RefreshCw, Palette, Check, Download, LayoutDashboard, Trophy, LogOut } from 'lucide-react'
 import { deleteAllSales, deleteUser } from './actions'
 import { exportToCSV, formatSalesForExport } from '@/lib/export'
 import { toast } from 'sonner'
@@ -116,37 +116,37 @@ export function AdminView({ stats, users }: AdminViewProps) {
   ]
 
   return (
-    <div className={`min-h-screen p-8 overflow-hidden relative transition-colors duration-700 ${theme.background} ${theme.text.primary}`}>
+    <div className={`min-h-screen p-3 sm:p-6 md:p-8 overflow-hidden relative transition-colors duration-700 ${theme.background} ${theme.text.primary} safe-top safe-bottom`}>
       {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 blur-[120px]" />
         <div className="absolute top-[40%] -right-[10%] w-[50%] h-[50%] rounded-full bg-purple-500/10 blur-[120px]" />
       </div>
 
-      <div className="max-w-6xl mx-auto space-y-8 relative z-10">
-        <div className="flex items-center justify-between">
+      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6 md:space-y-8 relative z-10">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
           <motion.h1
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className={`text-4xl font-bold ${theme.text.primary}`}
+            className={`text-2xl sm:text-3xl md:text-4xl font-bold ${theme.text.primary}`}
           >
             Admin Command Center
           </motion.h1>
-          <div className="flex gap-2">
+          <div className="flex gap-1.5 sm:gap-2">
             <Link href="/dashboard">
-              <Button variant="outline" size="icon" className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass}`}>
-                <LayoutDashboard className="h-4 w-4" />
+              <Button variant="outline" size="icon" className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass} h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}>
+                <LayoutDashboard className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </Link>
             <Link href="/list">
-              <Button variant="outline" size="icon" className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass}`}>
-                <Trophy className="h-4 w-4" />
+              <Button variant="outline" size="icon" className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass} h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}>
+                <Trophy className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </Link>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass}`}>
-                  <Palette className="h-4 w-4" />
+                <Button variant="outline" size="icon" className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass} h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}>
+                  <Palette className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 bg-slate-900 border-slate-800 text-white">
@@ -167,20 +167,25 @@ export function AdminView({ stats, users }: AdminViewProps) {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button variant="outline" size="icon" onClick={handleExportSales} className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass}`}>
-              <Download className="h-4 w-4" />
+            <Button variant="outline" size="icon" onClick={handleExportSales} className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass} h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}>
+              <Download className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
-            <Button variant="outline" size="icon" onClick={() => router.refresh()} className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass}`}>
-              <RefreshCw className="h-4 w-4" />
+            <Button variant="outline" size="icon" onClick={() => router.refresh()} className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass} h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}>
+              <RefreshCw className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
-            <form action={signOut}>
-              <Button variant="outline" className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass} hover:text-red-400`}>Sign Out</Button>
+            <form action={signOut} className="hidden sm:block">
+              <Button variant="outline" className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass} hover:text-red-400 touch-manipulation`}>Sign Out</Button>
+            </form>
+            <form action={signOut} className="sm:hidden">
+              <Button variant="outline" size="icon" className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass} hover:text-red-400 h-9 w-9 touch-manipulation`}>
+                <LogOut className="h-4 w-4" />
+              </Button>
             </form>
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -234,7 +239,7 @@ export function AdminView({ stats, users }: AdminViewProps) {
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -300,7 +305,7 @@ export function AdminView({ stats, users }: AdminViewProps) {
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           {/* Users List */}
           <motion.div
             className="lg:col-span-2"
