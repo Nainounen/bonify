@@ -8,20 +8,36 @@ export async function getAdminStats() {
 
   const { data: sales, error } = await supabase
     .from('sales')
-    .select('category')
+    .select('category, created_at')
 
   if (error) {
     console.error('Error fetching sales:', error)
-    return { internet: 0, mobile: 0, total: 0 }
+    return { internet: 0, mobile: 0, total: 0, salesByDate: [] }
   }
 
   const internet = sales.filter((s: any) => s.category === 'Internet').length
   const mobile = sales.filter((s: any) => s.category === 'Mobile').length
 
+  // Group sales by date for the chart
+  const salesByDateMap = sales.reduce((acc: any, sale: any) => {
+    const date = new Date(sale.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    if (!acc[date]) {
+      acc[date] = { date, internet: 0, mobile: 0 }
+    }
+    if (sale.category === 'Internet') acc[date].internet++
+    if (sale.category === 'Mobile') acc[date].mobile++
+    return acc
+  }, {})
+
+  const salesByDate = Object.values(salesByDateMap).sort((a: any, b: any) =>
+    new Date(a.date).getTime() - new Date(b.date).getTime()
+  ).slice(-7) // Last 7 days
+
   return {
     internet,
     mobile,
-    total: sales.length
+    total: sales.length,
+    salesByDate
   }
 }
 
