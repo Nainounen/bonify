@@ -19,24 +19,24 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className="toaster group"
       toastOptions={{
         classNames: {
-          toast: 'backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl',
+          toast: 'backdrop-blur-2xl bg-white/[0.15] border border-white/30 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] rounded-3xl',
           title: 'text-white font-semibold',
-          description: 'text-white/80',
-          actionButton: 'bg-white/20 text-white hover:bg-white/30',
-          cancelButton: 'bg-white/10 text-white/70 hover:bg-white/20',
-          closeButton: 'bg-white/10 text-white/70 hover:bg-white/20 border-white/10',
-          success: 'backdrop-blur-xl bg-emerald-500/20 border-emerald-400/30',
-          error: 'backdrop-blur-xl bg-red-500/20 border-red-400/30',
-          warning: 'backdrop-blur-xl bg-amber-500/20 border-amber-400/30',
-          info: 'backdrop-blur-xl bg-blue-500/20 border-blue-400/30',
+          description: 'text-white/90',
+          actionButton: 'bg-white/25 text-white hover:bg-white/35 rounded-2xl backdrop-blur-xl border border-white/20',
+          cancelButton: 'bg-white/15 text-white/80 hover:bg-white/25 rounded-2xl backdrop-blur-xl border border-white/20',
+          closeButton: 'bg-white/15 text-white/80 hover:bg-white/25 border-white/20 rounded-xl backdrop-blur-xl',
+          success: 'backdrop-blur-2xl bg-emerald-500/25 border-emerald-300/40 shadow-[0_8px_32px_0_rgba(16,185,129,0.25)]',
+          error: 'backdrop-blur-2xl bg-red-500/25 border-red-300/40 shadow-[0_8px_32px_0_rgba(239,68,68,0.25)]',
+          warning: 'backdrop-blur-2xl bg-amber-500/25 border-amber-300/40 shadow-[0_8px_32px_0_rgba(245,158,11,0.25)]',
+          info: 'backdrop-blur-2xl bg-blue-500/25 border-blue-300/40 shadow-[0_8px_32px_0_rgba(59,130,246,0.25)]',
         },
       }}
       icons={{
-        success: <CircleCheckIcon className="size-4 text-emerald-400" />,
-        info: <InfoIcon className="size-4 text-blue-400" />,
-        warning: <TriangleAlertIcon className="size-4 text-amber-400" />,
-        error: <OctagonXIcon className="size-4 text-red-400" />,
-        loading: <Loader2Icon className="size-4 animate-spin text-white" />,
+        success: <CircleCheckIcon className="size-5 text-emerald-300" />,
+        info: <InfoIcon className="size-5 text-blue-300" />,
+        warning: <TriangleAlertIcon className="size-5 text-amber-300" />,
+        error: <OctagonXIcon className="size-5 text-red-300" />,
+        loading: <Loader2Icon className="size-5 animate-spin text-white" />,
       }}
       {...props}
     />
