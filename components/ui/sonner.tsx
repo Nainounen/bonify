@@ -17,21 +17,27 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
-      icons={{
-        success: <CircleCheckIcon className="size-4" />,
-        info: <InfoIcon className="size-4" />,
-        warning: <TriangleAlertIcon className="size-4" />,
-        error: <OctagonXIcon className="size-4" />,
-        loading: <Loader2Icon className="size-4 animate-spin" />,
+      toastOptions={{
+        classNames: {
+          toast: 'backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl',
+          title: 'text-white font-semibold',
+          description: 'text-white/80',
+          actionButton: 'bg-white/20 text-white hover:bg-white/30',
+          cancelButton: 'bg-white/10 text-white/70 hover:bg-white/20',
+          closeButton: 'bg-white/10 text-white/70 hover:bg-white/20 border-white/10',
+          success: 'backdrop-blur-xl bg-emerald-500/20 border-emerald-400/30',
+          error: 'backdrop-blur-xl bg-red-500/20 border-red-400/30',
+          warning: 'backdrop-blur-xl bg-amber-500/20 border-amber-400/30',
+          info: 'backdrop-blur-xl bg-blue-500/20 border-blue-400/30',
+        },
       }}
-      style={
-        {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
-          "--border-radius": "var(--radius)",
-        } as React.CSSProperties
-      }
+      icons={{
+        success: <CircleCheckIcon className="size-4 text-emerald-400" />,
+        info: <InfoIcon className="size-4 text-blue-400" />,
+        warning: <TriangleAlertIcon className="size-4 text-amber-400" />,
+        error: <OctagonXIcon className="size-4 text-red-400" />,
+        loading: <Loader2Icon className="size-4 animate-spin text-white" />,
+      }}
       {...props}
     />
   )
