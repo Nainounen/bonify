@@ -60,34 +60,34 @@ export function ListView({ user, leaderboard }: ListViewProps) {
   return (
     <div className={`min-h-screen transition-colors duration-700 ${theme.background}`}>
       {/* Header Bar */}
-      <div className={`sticky top-0 z-50 backdrop-blur-xl border-b ${theme.navBar} ${theme.navBarBorder}`}>
-        <div className="container mx-auto max-w-2xl px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      <div className={`sticky top-0 z-50 backdrop-blur-xl border-b ${theme.navBar} ${theme.navBarBorder} safe-top`}>
+        <div className="container mx-auto max-w-2xl px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             {user.email !== 'list@admin.com' && (
               <Link href="/dashboard">
-                <Button variant="ghost" size="icon" className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-slate-500/10`}>
-                  <ArrowLeft className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-slate-500/10 h-9 w-9 sm:h-10 sm:w-10 touch-manipulation flex-shrink-0`}>
+                  <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </Link>
             )}
-            <div>
-              <p className={`${theme.text.primary} text-sm font-medium`}>Leaderboard</p>
-              <p className={`${theme.text.muted} text-xs`}>Employee Rankings</p>
+            <div className="min-w-0">
+              <p className={`${theme.text.primary} text-sm sm:text-base font-medium`}>Leaderboard</p>
+              <p className={`${theme.text.muted} text-xs sm:text-sm`}>Employee Rankings</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={handleExportLeaderboard}
-              className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-slate-500/10`}
+              className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-slate-500/10 h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}
             >
-              <Download className="h-4 w-4" />
+              <Download className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-slate-500/10`}>
-                  <Palette className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-slate-500/10 h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}>
+                  <Palette className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 bg-slate-900 border-slate-800 text-white">
@@ -109,25 +109,25 @@ export function ListView({ user, leaderboard }: ListViewProps) {
               </DropdownMenuContent>
             </DropdownMenu>
             <form action={signOut}>
-              <Button variant="ghost" size="sm" className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-slate-500/10`}>
-                <LogOut className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-slate-500/10 h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}>
+                <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </form>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto max-w-2xl px-4 py-8 pb-20">
+      <div className="container mx-auto max-w-2xl px-3 sm:px-4 md:px-6 py-6 sm:py-8 pb-24 sm:pb-20 safe-bottom">
 
-        <div className="text-center mb-8">
-          <div className={`inline-flex items-center justify-center p-3 rounded-full mb-4 ${theme.card}`}>
-            <Trophy className="h-8 w-8 text-yellow-400" />
+        <div className="text-center mb-6 sm:mb-8">
+          <div className={`inline-flex items-center justify-center p-2.5 sm:p-3 rounded-full mb-3 sm:mb-4 ${theme.card}`}>
+            <Trophy className="h-7 w-7 sm:h-8 sm:w-8 text-yellow-400" />
           </div>
-          <h1 className={`text-3xl font-bold ${theme.text.primary} mb-2`}>Top Performers</h1>
-          <p className={theme.text.muted}>See who's leading the sales charts</p>
+          <h1 className={`text-2xl sm:text-3xl md:text-4xl font-bold ${theme.text.primary} mb-1 sm:mb-2`}>Top Performers</h1>
+          <p className={`${theme.text.muted} text-sm sm:text-base`}>See who's leading the sales charts</p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {leaderboard.map((employee, index) => {
             const isCurrentUser = employee.id === user.id
             const IconComponent = employee.currentTier ? (Icons as any)[employee.currentTier.icon] : Icons.Star
@@ -135,51 +135,51 @@ export function ListView({ user, leaderboard }: ListViewProps) {
             return (
               <div
                 key={employee.id}
-                className={`relative overflow-hidden rounded-2xl border p-4 transition-all
+                className={`relative overflow-hidden rounded-xl sm:rounded-2xl border p-3 sm:p-4 transition-all
                   ${isCurrentUser
                     ? `${theme.card} ${theme.cardBorder} shadow-lg`
                     : `${theme.cardInactive} ${theme.cardInactiveBorder} hover:${theme.card}`
                   }`}
               >
-                <div className="flex items-center gap-4">
-                  <div className="flex-none w-8 text-center">
-                    <span className={`text-lg font-bold ${index < 3 ? 'text-yellow-400' : theme.iconMuted}`}>
+                <div className="flex items-center gap-2.5 sm:gap-4">
+                  <div className="flex-none w-6 sm:w-8 text-center">
+                    <span className={`text-base sm:text-lg font-bold ${index < 3 ? 'text-yellow-400' : theme.iconMuted}`}>
                       #{index + 1}
                     </span>
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className={`font-medium truncate ${isCurrentUser ? theme.text.primary : theme.text.secondary}`}>
+                    <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
+                      <h3 className={`font-medium truncate text-sm sm:text-base ${isCurrentUser ? theme.text.primary : theme.text.secondary}`}>
                         {employee.name}
                       </h3>
                       {isCurrentUser && (
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wide ${theme.accent}/20 ${theme.primary}`}>
+                        <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-medium uppercase tracking-wide ${theme.accent}/20 ${theme.primary} whitespace-nowrap flex-shrink-0`}>
                           You
                         </span>
                       )}
                     </div>
-                    <div className={`flex items-center gap-2 text-xs ${theme.text.muted}`}>
+                    <div className={`flex items-center gap-1.5 sm:gap-2 text-xs ${theme.text.muted}`}>
                       {employee.currentTier && (
                         <div className="flex items-center gap-1" style={{ color: employee.currentTier.color }}>
                           <IconComponent className="h-3 w-3" />
-                          <span>{employee.currentTier.name}</span>
+                          <span className="text-xs sm:text-sm">{employee.currentTier.name}</span>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 text-right">
-                    <div className="hidden sm:block">
+                  <div className="flex items-center gap-2 sm:gap-4 text-right flex-shrink-0">
+                    <div className="hidden md:block">
                       <div className={`text-sm font-medium ${theme.primary}`}>{employee.internetSales}</div>
                       <div className={`text-[10px] ${theme.iconMuted} uppercase`}>Net</div>
                     </div>
-                    <div className="hidden sm:block">
+                    <div className="hidden md:block">
                       <div className={`text-sm font-medium ${theme.secondary}`}>{employee.mobileSales}</div>
                       <div className={`text-[10px] ${theme.iconMuted} uppercase`}>Mob</div>
                     </div>
                     <div>
-                      <div className={`text-xl font-bold ${theme.text.primary}`}>{employee.totalSales}</div>
+                      <div className={`text-lg sm:text-xl font-bold ${theme.text.primary}`}>{employee.totalSales}</div>
                       <div className={`text-xs ${theme.text.muted}`}>Total</div>
                     </div>
                   </div>
