@@ -101,9 +101,19 @@ export default async function ListPage() {
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <div className="text-xl font-bold text-white">{employee.totalSales}</div>
-                    <div className="text-xs text-white/50">Sales</div>
+                  <div className="flex items-center gap-4 text-right">
+                    <div className="hidden sm:block">
+                      <div className="text-sm font-medium text-indigo-300">{employee.internetSales}</div>
+                      <div className="text-[10px] text-white/40 uppercase">Net</div>
+                    </div>
+                    <div className="hidden sm:block">
+                      <div className="text-sm font-medium text-purple-300">{employee.mobileSales}</div>
+                      <div className="text-[10px] text-white/40 uppercase">Mob</div>
+                    </div>
+                    <div>
+                      <div className="text-xl font-bold text-white">{employee.totalSales}</div>
+                      <div className="text-xs text-white/50">Total</div>
+                    </div>
                   </div>
                 </div>
               </div>

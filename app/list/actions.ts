@@ -8,6 +8,8 @@ export type LeaderboardEntry = {
   name: string
   email: string
   totalSales: number
+  internetSales: number
+  mobileSales: number
   currentTier: Database['public']['Tables']['bonus_tiers']['Row'] | null
 }
 
@@ -26,7 +28,8 @@ export async function getLeaderboard() {
     .select(`
       *,
       sales (
-        id
+        id,
+        category
       )
     `)
     .neq('email', 'list@admin.com')
@@ -53,6 +56,8 @@ export async function getLeaderboard() {
   // Process data to calculate stats for each employee
   const leaderboard: LeaderboardEntry[] = employees.map((emp: any) => {
     const totalSales = emp.sales?.length || 0
+    const internetSales = emp.sales?.filter((s: any) => s.category === 'Internet').length || 0
+    const mobileSales = emp.sales?.filter((s: any) => s.category === 'Mobile').length || 0
 
     // Find current tier
     // Tiers are sorted by contracts_required ascending
@@ -71,6 +76,8 @@ export async function getLeaderboard() {
       name: emp.name,
       email: emp.email,
       totalSales,
+      internetSales,
+      mobileSales,
       currentTier
     }
   })

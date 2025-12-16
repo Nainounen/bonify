@@ -4,11 +4,11 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/lib/supabase/types'
 
-export async function logSale() {
+export async function logSale(category: 'Internet' | 'Mobile') {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
     return { error: 'Not authenticated' }
   }
@@ -41,6 +41,7 @@ export async function logSale() {
     .insert({
       employee_id: user.id,
       bonus_tier_id: currentTier?.id ?? null,
+      category: category
     } as any)
 
   if (insertError) {
@@ -53,9 +54,9 @@ export async function logSale() {
 
 export async function getEmployeeStats() {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
     return { error: 'Not authenticated' }
   }
@@ -66,7 +67,7 @@ export async function getEmployeeStats() {
     .select('*')
     .eq('id', user.id)
     .single()
-  
+
   // If employee doesn't exist, create it
   if (!employee) {
     const { data: newEmployee, error: createError } = await supabase
@@ -78,11 +79,11 @@ export async function getEmployeeStats() {
       } as any)
       .select()
       .single()
-    
+
     if (createError) {
       return { error: 'Failed to create employee record' }
     }
-    
+
     employee = newEmployee
   }
 
@@ -92,7 +93,7 @@ export async function getEmployeeStats() {
     .select('*, bonus_tiers(*)')
     .eq('employee_id', user.id)
     .order('created_at', { ascending: false })
-  
+
   type SaleWithTier = Database['public']['Tables']['sales']['Row'] & {
     bonus_tiers: Database['public']['Tables']['bonus_tiers']['Row'] | null
   }
@@ -104,16 +105,16 @@ export async function getEmployeeStats() {
     .order('order', { ascending: true })
 
   const totalSales = sales?.length || 0
-  
+
   type BonusTier = Database['public']['Tables']['bonus_tiers']['Row']
-  
+
   // Calculate current tier
   const currentTier = (tiers as BonusTier[] | null)?.filter(t => t.contracts_required <= totalSales)
     .sort((a, b) => b.contracts_required - a.contracts_required)[0]
-  
+
   // Calculate next tier
   const nextTier = (tiers as BonusTier[] | null)?.find(t => t.contracts_required > totalSales)
-  
+
   // Calculate total bonus earned
   const totalBonus = (sales as SaleWithTier[] | null)?.reduce((sum, sale) => {
     return sum + (sale.bonus_tiers?.bonus_amount || 0)
