@@ -19,16 +19,16 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className="toaster group"
       toastOptions={{
         classNames: {
-          toast: 'backdrop-blur-2xl bg-white/[0.15] border border-white/30 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] rounded-3xl',
+          toast: 'backdrop-blur-2xl bg-white/[0.15] border-2 border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] rounded-3xl',
           title: 'text-white font-semibold',
           description: 'text-white/90',
-          actionButton: 'bg-white/25 text-white hover:bg-white/35 rounded-2xl backdrop-blur-xl border border-white/20',
-          cancelButton: 'bg-white/15 text-white/80 hover:bg-white/25 rounded-2xl backdrop-blur-xl border border-white/20',
-          closeButton: 'bg-white/15 text-white/80 hover:bg-white/25 border-white/20 rounded-xl backdrop-blur-xl',
-          success: 'backdrop-blur-2xl bg-emerald-500/25 border-emerald-300/40 shadow-[0_8px_32px_0_rgba(16,185,129,0.25)]',
-          error: 'backdrop-blur-2xl bg-red-500/25 border-red-300/40 shadow-[0_8px_32px_0_rgba(239,68,68,0.25)]',
-          warning: 'backdrop-blur-2xl bg-amber-500/25 border-amber-300/40 shadow-[0_8px_32px_0_rgba(245,158,11,0.25)]',
-          info: 'backdrop-blur-2xl bg-blue-500/25 border-blue-300/40 shadow-[0_8px_32px_0_rgba(59,130,246,0.25)]',
+          actionButton: 'bg-white/25 text-white hover:bg-white/35 rounded-2xl backdrop-blur-xl border-2 border-white/30',
+          cancelButton: 'bg-white/15 text-white/80 hover:bg-white/25 rounded-2xl backdrop-blur-xl border-2 border-white/30',
+          closeButton: 'bg-white/15 text-white/80 hover:bg-white/25 border-2 border-white/30 rounded-xl backdrop-blur-xl',
+          success: 'backdrop-blur-2xl bg-emerald-500/25 border-2 border-emerald-300/50 shadow-[0_8px_32px_0_rgba(16,185,129,0.25)]',
+          error: 'backdrop-blur-2xl bg-red-500/25 border-2 border-red-300/50 shadow-[0_8px_32px_0_rgba(239,68,68,0.25)]',
+          warning: 'backdrop-blur-2xl bg-amber-500/25 border-2 border-amber-300/50 shadow-[0_8px_32px_0_rgba(245,158,11,0.25)]',
+          info: 'backdrop-blur-2xl bg-blue-500/25 border-2 border-blue-300/50 shadow-[0_8px_32px_0_rgba(59,130,246,0.25)]',
         },
       }}
       icons={{
