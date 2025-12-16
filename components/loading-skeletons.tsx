@@ -1,19 +1,17 @@
 'use client'
 
 import { Skeleton } from '@/components/ui/skeleton'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { getTheme } from '@/lib/themes'
 
-export function DashboardSkeleton() {
-  const [themeId, setThemeId] = useState('default')
-  
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('bonify-theme')
-    if (savedTheme) {
-      setThemeId(savedTheme)
-    }
-  }, [])
+// Read theme synchronously from localStorage to avoid flash
+const getInitialTheme = () => {
+  if (typeof window === 'undefined') return 'default'
+  return localStorage.getItem('bonify-theme') || 'default'
+}
 
+export function DashboardSkeleton() {
+  const [themeId] = useState(getInitialTheme)
   const theme = getTheme(themeId).variants.Internet
 
   return (
@@ -70,15 +68,7 @@ export function DashboardSkeleton() {
 }
 
 export function AdminSkeleton() {
-  const [themeId, setThemeId] = useState('default')
-  
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('bonify-theme')
-    if (savedTheme) {
-      setThemeId(savedTheme)
-    }
-  }, [])
-
+  const [themeId] = useState(getInitialTheme)
   const theme = getTheme(themeId).variants.Internet
 
   return (
@@ -110,15 +100,7 @@ export function AdminSkeleton() {
 }
 
 export function LeaderboardSkeleton() {
-  const [themeId, setThemeId] = useState('default')
-  
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('bonify-theme')
-    if (savedTheme) {
-      setThemeId(savedTheme)
-    }
-  }, [])
-
+  const [themeId] = useState(getInitialTheme)
   const theme = getTheme(themeId).variants.Internet
 
   return (
