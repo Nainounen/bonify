@@ -60,12 +60,31 @@ export async function getEmployeeStats() {
     return { error: 'Not authenticated' }
   }
 
-  // Get employee info
-  const { data: employee } = await supabase
+  // Get employee info (create if doesn't exist)
+  let { data: employee } = await supabase
     .from('employees')
     .select('*')
     .eq('id', user.id)
     .single()
+  
+  // If employee doesn't exist, create it
+  if (!employee) {
+    const { data: newEmployee, error: createError } = await supabase
+      .from('employees')
+      .insert({
+        id: user.id,
+        email: user.email!,
+        name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+      })
+      .select()
+      .single()
+    
+    if (createError) {
+      return { error: 'Failed to create employee record' }
+    }
+    
+    employee = newEmployee
+  }
 
   // Get all sales
   const { data: sales } = await supabase
