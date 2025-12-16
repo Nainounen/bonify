@@ -29,6 +29,11 @@ export function CounterButton({
   const currentVariant = safeTheme.variants[category]
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    // Haptic feedback for mobile
+    if ('vibrate' in navigator) {
+      navigator.vibrate(10)
+    }
+    
     // Check rate limit
     if (!rateLimiter.check('sale', RATE_LIMITS.SALE)) {
       const resetTime = Math.ceil(rateLimiter.getResetTime('sale', RATE_LIMITS.SALE) / 1000)
@@ -117,36 +122,38 @@ export function CounterButton({
   }
 
   return (
-    <div className="flex flex-col items-center gap-8">
-      <div className="flex items-center p-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-sm">
+    <div className="flex flex-col items-center gap-6 sm:gap-8">
+      <div className="flex items-center p-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-sm touch-manipulation">
         <button
           onClick={() => setCategory('Internet')}
-          className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-all ${category === 'Internet'
+          className={`flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all touch-manipulation ${category === 'Internet'
             ? `${safeTheme.variants.Internet.accent} text-white shadow-lg`
             : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
           style={category === 'Internet' ? { boxShadow: `0 10px 15px -3px rgba(${safeTheme.variants.Internet.glowColor}, 0.25)` } : undefined}
         >
-          <Wifi className="h-4 w-4" />
-          Internet
+          <Wifi className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <span className="hidden xs:inline">Internet</span>
+          <span className="xs:hidden">Net</span>
         </button>
         <button
           onClick={() => setCategory('Mobile')}
-          className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-all ${category === 'Mobile'
+          className={`flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all touch-manipulation ${category === 'Mobile'
             ? `${safeTheme.variants.Mobile.accent} text-white shadow-lg`
             : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
           style={category === 'Mobile' ? { boxShadow: `0 10px 15px -3px rgba(${safeTheme.variants.Mobile.glowColor}, 0.25)` } : undefined}
         >
-          <Smartphone className="h-4 w-4" />
-          Mobile
+          <Smartphone className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <span className="hidden xs:inline">Mobile</span>
+          <span className="xs:hidden">Mob</span>
         </button>
       </div>
 
       <button
         onClick={handleClick}
         disabled={isPending}
-        className={`relative h-48 w-48 rounded-full font-bold shadow-2xl transition-all active:scale-95 ${isAnimating ? 'scale-95' : 'hover:scale-105'
+        className={`relative h-40 w-40 sm:h-48 sm:w-48 md:h-56 md:w-56 rounded-full font-bold shadow-2xl transition-all active:scale-95 touch-manipulation ${isAnimating ? 'scale-95' : 'hover:scale-105'
           } ${currentVariant.buttonGradient} disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden`}
         style={{
           boxShadow: `0 20px 60px rgba(${currentVariant.glowColor}, 0.4), 0 0 0 0 rgba(${currentVariant.glowColor}, 0.7)`,
@@ -170,9 +177,9 @@ export function CounterButton({
         ))}
 
         <div className="relative flex flex-col items-center justify-center h-full text-white">
-          <Plus className={`h-16 w-16 mb-2 drop-shadow-lg transition-transform duration-500 ${isAnimating ? 'rotate-180' : ''}`} strokeWidth={3} />
-          <span className="text-sm font-medium uppercase tracking-wider opacity-90">Add Sale</span>
-          <span className="text-xs opacity-75 mt-1 font-medium">{category}</span>
+          <Plus className={`h-12 w-12 sm:h-16 sm:w-16 mb-1 sm:mb-2 drop-shadow-lg transition-transform duration-500 ${isAnimating ? 'rotate-180' : ''}`} strokeWidth={3} />
+          <span className="text-xs sm:text-sm font-medium uppercase tracking-wider opacity-90">Add Sale</span>
+          <span className="text-[10px] sm:text-xs opacity-75 mt-0.5 sm:mt-1 font-medium">{category}</span>
         </div>
         <style jsx>{`
           @keyframes pulse-ring {
