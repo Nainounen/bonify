@@ -26,15 +26,15 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#040d33] p-4">
-      <Card className="w-full max-w-md bg-[#001155] border-[#0445c8]/30">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
+      <Card className="w-full max-w-md">
         <CardHeader className="space-y-3 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#0445c8] to-[#0e6eec]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600">
             <Trophy className="h-8 w-8 text-white" />
           </div>
-          <CardTitle className="text-2xl text-white">Bonify</CardTitle>
-          <CardDescription className="text-white/70">
-            {isSignUp ? 'Create your account to start tracking sales' : 'Sign in to track your performance'}
+          <CardTitle className="text-2xl">Bonify</CardTitle>
+          <CardDescription>
+            {isSignUp ? 'Create your account to start tracking sales' : 'Sign in to track your bonus progress'}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -76,7 +76,7 @@ export default function LoginPage() {
               />
             </div>
             {error && (
-              <div className="rounded-md bg-[#f20505]/10 border border-[#f20505]/30 p-3 text-sm text-[#f20505]">
+              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
                 {error}
               </div>
             )}
