@@ -2,12 +2,13 @@
 
 import { Skeleton } from '@/components/ui/skeleton'
 import { useState } from 'react'
-import { getTheme } from '@/lib/themes'
+import { themes, getTheme } from '@/lib/themes'
 
 // Read theme synchronously from localStorage to avoid flash
 const getInitialTheme = () => {
   if (typeof window === 'undefined') return 'default'
-  return localStorage.getItem('bonify-theme') || 'default'
+  const saved = localStorage.getItem('bonify-theme')
+  return (saved && themes[saved]) ? saved : 'default'
 }
 
 export function DashboardSkeleton() {
@@ -15,7 +16,7 @@ export function DashboardSkeleton() {
   const theme = getTheme(themeId).variants.Internet
 
   return (
-    <div className={`min-h-screen transition-colors duration-700 ${theme.background}`}>
+    <div suppressHydrationWarning className={`min-h-screen transition-colors duration-700 ${theme.background}`}>
       {/* Header Bar */}
       <div className={`sticky top-0 z-50 border-b ${theme.navBar} ${theme.navBarBorder}`}>
         <div className="container mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
@@ -86,7 +87,7 @@ export function AdminSkeleton() {
   const theme = getTheme(themeId).variants.Internet
 
   return (
-    <div className={`min-h-screen p-8 transition-colors duration-700 ${theme.background} ${theme.text.primary}`}>
+    <div suppressHydrationWarning className={`min-h-screen p-8 transition-colors duration-700 ${theme.background} ${theme.text.primary}`}>
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="flex items-center justify-between">
           <Skeleton className={`h-10 w-64 ${theme.card}`} />
@@ -118,7 +119,7 @@ export function LeaderboardSkeleton() {
   const theme = getTheme(themeId).variants.Internet
 
   return (
-    <div className={`min-h-screen transition-colors duration-700 ${theme.background}`}>
+    <div suppressHydrationWarning className={`min-h-screen transition-colors duration-700 ${theme.background}`}>
       <div className={`sticky top-0 z-50 border-b ${theme.navBar} ${theme.navBarBorder}`}>
         <div className="container mx-auto max-w-2xl px-4 py-3">
           <Skeleton className={`h-5 w-32 ${theme.card}`} />

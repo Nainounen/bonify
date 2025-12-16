@@ -86,7 +86,7 @@ export function ListView({ user, leaderboard }: ListViewProps) {
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-slate-500/10 h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}>
+                <Button suppressHydrationWarning variant="ghost" size="icon" className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-slate-500/10 h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}>
                   <Palette className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </DropdownMenuTrigger>

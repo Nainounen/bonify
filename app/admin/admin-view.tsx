@@ -145,7 +145,7 @@ export function AdminView({ stats, users }: AdminViewProps) {
             </Link>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass} h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}>
+                <Button suppressHydrationWarning variant="outline" size="icon" className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass} h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}>
                   <Palette className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </DropdownMenuTrigger>
