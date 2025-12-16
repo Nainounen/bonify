@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Bonify - Employee Bonus Tracker 🎯
+
+A gamified employee bonus tracking application where employees can track contract sales and earn bonuses based on milestones. Built with Next.js, Supabase, and shadcn/ui.
+
+## Features
+
+- 🔐 **Authentication** - Secure email/password authentication with Supabase
+- 📊 **Real-time Stats** - Track total contracts, current tier, and bonuses earned
+- 🎮 **Gamification** - Progress through tiers (Starter → Bronze → Silver → Gold → Platinum → Diamond)
+- 🎉 **Celebrations** - Confetti animations when reaching new tiers
+- 📱 **Responsive Design** - Clean UI built with shadcn/ui components
+- ⚡ **Optimistic Updates** - Instant feedback when logging sales
+
+## Tech Stack
+
+- **Frontend**: Next.js 16 (App Router), React 19, TypeScript
+- **Backend**: Supabase (PostgreSQL + Authentication)
+- **UI**: shadcn/ui, Tailwind CSS v4
+- **Animations**: canvas-confetti
+- **Notifications**: Sonner (toast notifications)
 
 ## Getting Started
 
-First, run the development server:
+### 1. Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
+- Node.js 18+ and pnpm installed
+- A Supabase account (sign up at supabase.com)
+
+### 2. Supabase Setup
+
+1. Create a new Supabase project at supabase.com
+2. Go to your project settings and copy:
+   - Project URL (API URL)
+   - Anon/Public API Key
+3. In the Supabase SQL Editor, run the SQL from supabase-schema.sql
+
+### 3. Environment Variables
+
+Update .env.local file with your Supabase credentials:
+
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+
+### 4. Install and Run
+
+pnpm install
 pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Usage
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Sign up with your name, email, and password
+2. Click the large green + button to log contract sales
+3. Watch your progress through bonus tiers
+4. Celebrate with confetti when reaching new milestones!
 
-## Learn More
+## Bonus Tier System
 
-To learn more about Next.js, take a look at the following resources:
+- 🌟 Starter: 0 contracts - CHF 0
+- 🥉 Bronze: 5 contracts - CHF 100
+- 🥈 Silver: 15 contracts - CHF 300
+- 🥇 Gold: 30 contracts - CHF 750
+- 💎 Platinum: 50 contracts - CHF 1,500
+- 💠 Diamond: 100 contracts - CHF 3,500
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+pnpm dev    # Start development server
+pnpm build  # Build for production
+pnpm start  # Start production server
+pnpm lint   # Run ESLint
