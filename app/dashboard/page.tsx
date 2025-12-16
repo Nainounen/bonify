@@ -25,6 +25,9 @@ export default async function DashboardPage() {
   // Type assertion after error check
   const stats = statsResult as any
 
+  const internetSales = stats.sales.filter((s: any) => s.category === 'Internet').length
+  const mobileSales = stats.sales.filter((s: any) => s.category === 'Mobile').length
+
   const progressToNext = stats.nextTier
     ? ((stats.totalSales - (stats.currentTier?.contracts_required || 0)) /
       (stats.nextTier.contracts_required - (stats.currentTier?.contracts_required || 0))) *
@@ -60,6 +63,23 @@ export default async function DashboardPage() {
           <div className="mb-6">
             <div className="text-7xl font-bold text-white mb-2">{stats.totalSales}</div>
             <p className="text-white/60 text-sm uppercase tracking-wider">Total Sales</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto mb-8">
+            <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
+              <div className="flex items-center justify-center gap-2 mb-1 text-indigo-300">
+                <Icons.Wifi className="h-4 w-4" />
+                <span className="text-xs font-medium uppercase">Internet</span>
+              </div>
+              <div className="text-xl font-bold text-white">{internetSales}</div>
+            </div>
+            <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
+              <div className="flex items-center justify-center gap-2 mb-1 text-purple-300">
+                <Icons.Smartphone className="h-4 w-4" />
+                <span className="text-xs font-medium uppercase">Mobile</span>
+              </div>
+              <div className="text-xl font-bold text-white">{mobileSales}</div>
+            </div>
           </div>
 
           <div className="flex items-center justify-center gap-6 mb-8">
@@ -121,8 +141,8 @@ export default async function DashboardPage() {
                 <div
                   key={tier.id}
                   className={`relative p-4 rounded-2xl transition-all ${isUnlocked
-                      ? 'bg-gradient-to-r from-white/15 to-white/5 border-2'
-                      : 'bg-white/5 border'
+                    ? 'bg-gradient-to-r from-white/15 to-white/5 border-2'
+                    : 'bg-white/5 border'
                     } border-white/20 ${isCurrent ? 'ring-2 ring-white/40 ring-offset-2 ring-offset-purple-900' : ''
                     }`}
                 >
