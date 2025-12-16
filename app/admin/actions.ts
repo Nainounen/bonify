@@ -8,17 +8,17 @@ export async function getAdminStats() {
 
   const { data: sales, error } = await supabase
     .from('sales')
-    .select('category, created_at')
+    .select('category, created_at, employee_id, employees(name)')
 
   if (error) {
     console.error('Error fetching sales:', error)
-    return { internet: 0, mobile: 0, total: 0, salesByDate: [] }
+    return { internet: 0, mobile: 0, total: 0, salesByDate: [], salesByUserAndDate: [] }
   }
 
   const internet = sales.filter((s: any) => s.category === 'Internet').length
   const mobile = sales.filter((s: any) => s.category === 'Mobile').length
 
-  // Group sales by date for the chart
+  // Group sales by date for the chart (aggregate view)
   const salesByDateMap = sales.reduce((acc: any, sale: any) => {
     const date = new Date(sale.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     if (!acc[date]) {
@@ -33,11 +33,51 @@ export async function getAdminStats() {
     new Date(a.date).getTime() - new Date(b.date).getTime()
   ).slice(-7) // Last 7 days
 
+  // Group sales by user, date, and category for individual user trend lines
+  const salesByUserMap: any = {}
+  
+  sales.forEach((sale: any) => {
+    const date = new Date(sale.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    const userName = sale.employees?.name || 'Unknown'
+    const key = `${userName}-${sale.category}`
+    
+    if (!salesByUserMap[key]) {
+      salesByUserMap[key] = {
+        userName,
+        category: sale.category,
+        salesByDate: {}
+      }
+    }
+    
+    if (!salesByUserMap[key].salesByDate[date]) {
+      salesByUserMap[key].salesByDate[date] = 0
+    }
+    
+    salesByUserMap[key].salesByDate[date]++
+  })
+
+  // Convert to array format suitable for recharts
+  const salesByUserAndDate = Object.values(salesByUserMap).map((userData: any) => {
+    const dates = Object.keys(userData.salesByDate).sort((a, b) => 
+      new Date(a).getTime() - new Date(b).getTime()
+    ).slice(-7)
+    
+    return {
+      userName: userData.userName,
+      category: userData.category,
+      data: dates.map(date => ({
+        date,
+        count: userData.salesByDate[date]
+      }))
+    }
+  })
+
   return {
     internet,
     mobile,
     total: sales.length,
-    salesByDate
+    salesByDate,
+    salesByUserAndDate
   }
 }
 
