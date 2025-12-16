@@ -5,11 +5,12 @@ import { CounterButton } from '@/components/counter-button'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import * as Icons from 'lucide-react'
-import { Zap, LogOut, Undo2, Palette } from 'lucide-react'
+import { Zap, LogOut, Undo2, Palette, Trophy, Shield } from 'lucide-react'
 import { themes, getTheme } from '@/lib/themes'
 import { signOut } from '@/app/login/actions'
 import { undoLastSale } from '@/app/dashboard/undo-actions'
 import { toast } from 'sonner'
+import Link from 'next/link'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -70,6 +71,26 @@ export function DashboardView({ stats }: DashboardViewProps) {
             <p className={`${theme.text.secondary} text-xs`}>{currentTier?.name || 'Starter'} Tier</p>
           </div>
           <div className="flex items-center gap-2">
+            <Link href="/list">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-white/10`}
+              >
+                <Trophy className="h-4 w-4" />
+              </Button>
+            </Link>
+            {stats.employee?.email === 'admin@admin.com' && (
+              <Link href="/admin">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-white/10`}
+                >
+                  <Shield className="h-4 w-4" />
+                </Button>
+              </Link>
+            )}
             <Button 
               variant="ghost" 
               size="sm" 
@@ -156,6 +177,24 @@ export function DashboardView({ stats }: DashboardViewProps) {
             </div>
           </div>
         </div>
+
+        {/* Leaderboard Quick Access Card */}
+        <Link href="/list" className="block mb-8">
+          <div className={`p-6 rounded-3xl backdrop-blur-xl border transition-all duration-500 hover:scale-[1.02] cursor-pointer ${theme.card} ${theme.cardBorder} hover:${theme.glass}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className={`p-3 rounded-2xl ${theme.accent}/20`}>
+                  <Trophy className={`h-6 w-6 ${theme.primary}`} />
+                </div>
+                <div>
+                  <h3 className={`${theme.text.primary} font-semibold text-lg mb-1`}>View Leaderboard</h3>
+                  <p className={`${theme.text.muted} text-sm`}>See how you rank against other employees</p>
+                </div>
+              </div>
+              <Icons.ChevronRight className={`h-5 w-5 ${theme.text.muted}`} />
+            </div>
+          </div>
+        </Link>
 
         {/* Counter Button - Prominent */}
         <div className="flex flex-col items-center justify-center mb-12">

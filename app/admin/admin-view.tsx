@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Trash2, Users, Wifi, Smartphone, AlertTriangle, RefreshCw, Palette, Check, Download } from 'lucide-react'
+import { Trash2, Users, Wifi, Smartphone, AlertTriangle, RefreshCw, Palette, Check, Download, LayoutDashboard, Trophy } from 'lucide-react'
 import { deleteAllSales, deleteUser } from './actions'
 import { exportToCSV, formatSalesForExport } from '@/lib/export'
 import { toast } from 'sonner'
@@ -13,6 +13,7 @@ import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { themes, getTheme } from '@/lib/themes'
 import { rateLimiter, RATE_LIMITS } from '@/lib/rate-limiter'
+import Link from 'next/link'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -118,6 +119,16 @@ export function AdminView({ stats, users }: AdminViewProps) {
             Admin Command Center
           </motion.h1>
           <div className="flex gap-2">
+            <Link href="/dashboard">
+              <Button variant="outline" size="icon" className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass}`}>
+                <LayoutDashboard className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="/list">
+              <Button variant="outline" size="icon" className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass}`}>
+                <Trophy className="h-4 w-4" />
+              </Button>
+            </Link>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon" className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass}`}>
