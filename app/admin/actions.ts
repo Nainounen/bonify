@@ -8,18 +8,24 @@ export async function getAdminStats() {
 
   const { data: sales, error } = await supabase
     .from('sales')
-    .select('category, created_at, employee_id, employees(name)')
+    .select('category, created_at, employee_id, employees(name, email)')
 
   if (error) {
     console.error('Error fetching sales:', error)
     return { internet: 0, mobile: 0, total: 0, salesByDate: [], salesByUserAndDate: [] }
   }
 
-  const internet = sales.filter((s: any) => s.category === 'Internet').length
-  const mobile = sales.filter((s: any) => s.category === 'Mobile').length
+  // Filter out admin and list users
+  const filteredSales = sales.filter((s: any) => 
+    s.employees?.email !== 'admin@admin.com' && 
+    s.employees?.email !== 'list@admin.com'
+  )
+
+  const internet = filteredSales.filter((s: any) => s.category === 'Internet').length
+  const mobile = filteredSales.filter((s: any) => s.category === 'Mobile').length
 
   // Group sales by date for the chart (aggregate view)
-  const salesByDateMap = sales.reduce((acc: any, sale: any) => {
+  const salesByDateMap = filteredSales.reduce((acc: any, sale: any) => {
     const date = new Date(sale.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     if (!acc[date]) {
       acc[date] = { date, internet: 0, mobile: 0 }
@@ -36,7 +42,7 @@ export async function getAdminStats() {
   // Group sales by user, date, and category for individual user trend lines
   const salesByUserMap: any = {}
   
-  sales.forEach((sale: any) => {
+  filteredSales.forEach((sale: any) => {
     const date = new Date(sale.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     const userName = sale.employees?.name || 'Unknown'
     const key = `${userName}-${sale.category}`
@@ -75,7 +81,7 @@ export async function getAdminStats() {
   return {
     internet,
     mobile,
-    total: sales.length,
+    total: filteredSales.length,
     salesByDate,
     salesByUserAndDate
   }
@@ -94,7 +100,13 @@ export async function getUsers() {
     return []
   }
 
-  return users
+  // Filter out admin and list users
+  const filteredUsers = users.filter((user: any) => 
+    user.email !== 'admin@admin.com' && 
+    user.email !== 'list@admin.com'
+  )
+
+  return filteredUsers
 }
 
 export async function deleteAllSales() {
