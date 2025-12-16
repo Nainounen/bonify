@@ -26,19 +26,19 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-3 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600">
-            <Trophy className="h-8 w-8 text-white" />
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-3 sm:p-4 md:p-6 safe-top safe-bottom">
+      <Card className="w-full max-w-md shadow-2xl">
+        <CardHeader className="space-y-2 sm:space-y-3 text-center pb-4 sm:pb-6">
+          <div className="mx-auto flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-lg">
+            <Trophy className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
           </div>
-          <CardTitle className="text-2xl">Bonify</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl sm:text-2xl md:text-3xl">Bonify</CardTitle>
+          <CardDescription className="text-sm sm:text-base">
             {isSignUp ? 'Create your account to start tracking sales' : 'Sign in to track your bonus progress'}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form action={handleSubmit} className="space-y-4">
+        <CardContent className="pt-0">
+          <form action={handleSubmit} className="space-y-3 sm:space-y-4">
             {isSignUp && (
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
@@ -80,18 +80,18 @@ export default function LoginPage() {
                 {error}
               </div>
             )}
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full h-11 sm:h-12 text-base sm:text-lg font-semibold touch-manipulation" disabled={loading}>
               {loading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm">
+          <div className="mt-4 sm:mt-5 text-center text-sm">
             <button
               type="button"
               onClick={() => {
                 setIsSignUp(!isSignUp)
                 setError(null)
               }}
-              className="text-muted-foreground hover:text-primary underline-offset-4 hover:underline"
+              className="text-muted-foreground hover:text-primary underline-offset-4 hover:underline touch-manipulation py-2 px-3"
               disabled={loading}
             >
               {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
