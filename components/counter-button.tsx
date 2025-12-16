@@ -43,28 +43,17 @@ export function CounterButton() {
     <button
       onClick={handleClick}
       disabled={isPending}
-      className={`relative h-40 w-40 rounded-full font-bold shadow-2xl transition-all active:scale-95 ${
+      className={`relative h-32 w-32 rounded-full font-bold shadow-xl transition-all active:scale-95 ${
         isAnimating ? 'scale-95' : 'hover:scale-105'
-      } bg-gradient-to-br from-emerald-400 via-green-500 to-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed`}
+      } disabled:opacity-50 disabled:cursor-not-allowed`}
       style={{
-        boxShadow: '0 20px 60px rgba(16, 185, 129, 0.4), 0 0 0 0 rgba(16, 185, 129, 0.7)',
-        animation: isPending ? 'none' : 'pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+        background: 'linear-gradient(135deg, #0445c8 0%, #0e6eec 100%)',
+        boxShadow: '0 10px 30px rgba(4, 69, 200, 0.5)'
       }}
     >
-      <div className="absolute inset-0 rounded-full bg-white/20 blur-xl"></div>
       <div className="relative flex items-center justify-center h-full">
-        <Plus className="h-16 w-16 text-white drop-shadow-lg" strokeWidth={3} />
+        <Plus className="h-12 w-12 text-white" strokeWidth={2.5} />
       </div>
-      <style jsx>{`
-        @keyframes pulse-ring {
-          0%, 100% {
-            box-shadow: 0 20px 60px rgba(16, 185, 129, 0.4), 0 0 0 0 rgba(16, 185, 129, 0.7);
-          }
-          50% {
-            box-shadow: 0 20px 60px rgba(16, 185, 129, 0.6), 0 0 0 10px rgba(16, 185, 129, 0);
-          }
-        }
-      `}</style>
     </button>
   )
 }
