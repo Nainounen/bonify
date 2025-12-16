@@ -7,10 +7,19 @@ import { logSale } from '@/app/dashboard/actions'
 import { toast } from 'sonner'
 import confetti from 'canvas-confetti'
 
-export function CounterButton() {
+export function CounterButton({
+  category: controlledCategory,
+  onCategoryChange
+}: {
+  category?: 'Internet' | 'Mobile',
+  onCategoryChange?: (category: 'Internet' | 'Mobile') => void
+} = {}) {
   const [isPending, startTransition] = useTransition()
   const [isAnimating, setIsAnimating] = useState(false)
-  const [category, setCategory] = useState<'Internet' | 'Mobile'>('Internet')
+  const [internalCategory, setInternalCategory] = useState<'Internet' | 'Mobile'>('Internet')
+
+  const category = controlledCategory ?? internalCategory
+  const setCategory = onCategoryChange ?? setInternalCategory
 
   const handleClick = () => {
     setIsAnimating(true)
@@ -46,8 +55,8 @@ export function CounterButton() {
         <button
           onClick={() => setCategory('Internet')}
           className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-all ${category === 'Internet'
-              ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25'
-              : 'text-white/60 hover:text-white hover:bg-white/5'
+            ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25'
+            : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
         >
           <Wifi className="h-4 w-4" />
@@ -56,8 +65,8 @@ export function CounterButton() {
         <button
           onClick={() => setCategory('Mobile')}
           className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-all ${category === 'Mobile'
-              ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/25'
-              : 'text-white/60 hover:text-white hover:bg-white/5'
+            ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/25'
+            : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
         >
           <Smartphone className="h-4 w-4" />
