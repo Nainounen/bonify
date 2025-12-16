@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Trash2, Users, Wifi, Smartphone, AlertTriangle, RefreshCw, Palette, Check, Download, LayoutDashboard, Trophy } from 'lucide-react'
@@ -38,6 +38,20 @@ export function AdminView({ stats, users }: AdminViewProps) {
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   const [currentThemeId, setCurrentThemeId] = useState('default')
   const router = useRouter()
+  
+  // Load theme from localStorage on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('bonify-theme')
+    if (savedTheme && themes[savedTheme]) {
+      setCurrentThemeId(savedTheme)
+    }
+  }, [])
+
+  // Save theme to localStorage when changed
+  const handleThemeChange = (themeId: string) => {
+    setCurrentThemeId(themeId)
+    localStorage.setItem('bonify-theme', themeId)
+  }
   
   const theme = getTheme(currentThemeId).variants.Internet
 
@@ -139,7 +153,7 @@ export function AdminView({ stats, users }: AdminViewProps) {
                 {Object.values(themes).map((t) => (
                   <DropdownMenuItem
                     key={t.id}
-                    onClick={() => setCurrentThemeId(t.id)}
+                    onClick={() => handleThemeChange(t.id)}
                     className="cursor-pointer hover:bg-white/10 focus:bg-white/10"
                   >
                     <div className="flex items-center gap-2 w-full">

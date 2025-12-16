@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { CounterButton } from '@/components/counter-button'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
@@ -26,6 +26,20 @@ export function DashboardView({ stats }: DashboardViewProps) {
   const [category, setCategory] = useState<'Internet' | 'Mobile'>('Internet')
   const [currentThemeId, setCurrentThemeId] = useState('default')
   const [isPending, startTransition] = useTransition()
+
+  // Load theme from localStorage on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('bonify-theme')
+    if (savedTheme && themes[savedTheme]) {
+      setCurrentThemeId(savedTheme)
+    }
+  }, [])
+
+  // Save theme to localStorage when changed
+  const handleThemeChange = (themeId: string) => {
+    setCurrentThemeId(themeId)
+    localStorage.setItem('bonify-theme', themeId)
+  }
 
   const globalTheme = getTheme(currentThemeId)
   const theme = globalTheme.variants[category]
@@ -110,7 +124,7 @@ export function DashboardView({ stats }: DashboardViewProps) {
                 {Object.values(themes).map((t) => (
                   <DropdownMenuItem
                     key={t.id}
-                    onClick={() => setCurrentThemeId(t.id)}
+                    onClick={() => handleThemeChange(t.id)}
                     className="cursor-pointer hover:bg-white/10 focus:bg-white/10"
                   >
                     <div className="flex items-center gap-2 w-full">
