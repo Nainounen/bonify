@@ -7,6 +7,7 @@ import { logSale } from '@/app/dashboard/actions'
 import { toast } from 'sonner'
 import confetti from 'canvas-confetti'
 import { GlobalTheme, themes } from '@/lib/themes'
+import { rateLimiter, RATE_LIMITS } from '@/lib/rate-limiter'
 
 export function CounterButton({
   category: controlledCategory,
@@ -27,6 +28,13 @@ export function CounterButton({
   const currentVariant = theme.variants[category]
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    // Check rate limit
+    if (!rateLimiter.check('sale', RATE_LIMITS.SALE)) {
+      const resetTime = Math.ceil(rateLimiter.getResetTime('sale', RATE_LIMITS.SALE) / 1000)
+      toast.error(`Please wait ${resetTime} seconds before logging another sale`)
+      return
+    }
+
     setIsAnimating(true)
 
     // Create ripple effect

@@ -2,11 +2,14 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { LogOut, Trophy, ArrowLeft, Palette, Check } from 'lucide-react'
+import { LogOut, Trophy, ArrowLeft, Palette, Check, Download } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import Link from 'next/link'
 import { signOut } from '@/app/login/actions'
 import { themes } from '@/lib/themes'
+import { exportToCSV, formatLeaderboardForExport } from '@/lib/export'
+import { rateLimiter, RATE_LIMITS } from '@/lib/rate-limiter'
+import { toast } from 'sonner'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +26,22 @@ export function ListView({ user, leaderboard }: ListViewProps) {
   const [currentThemeId, setCurrentThemeId] = useState('default')
   
   const theme = themes[currentThemeId].variants.Internet // List view doesn't need category switching
+
+  const handleExportLeaderboard = () => {
+    if (!rateLimiter.check('export', RATE_LIMITS.EXPORT)) {
+      const resetTime = rateLimiter.getResetTime('export', RATE_LIMITS.EXPORT)
+      toast.error(`Rate limit exceeded. Try again in ${Math.ceil(resetTime / 1000)}s`)
+      return
+    }
+
+    try {
+      const csvData = formatLeaderboardForExport(leaderboard)
+      exportToCSV(csvData, `leaderboard-${new Date().toISOString().split('T')[0]}.csv`)
+      toast.success('Leaderboard exported successfully')
+    } catch (error) {
+      toast.error('Failed to export leaderboard')
+    }
+  }
 
   return (
     <div className={`min-h-screen transition-colors duration-700 ${theme.background}`}>
@@ -43,6 +62,14 @@ export function ListView({ user, leaderboard }: ListViewProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleExportLeaderboard}
+              className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-slate-500/10`}
+            >
+              <Download className="h-4 w-4" />
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-slate-500/10`}>

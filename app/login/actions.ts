@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { loginSchema, signupSchema } from '@/lib/validation'
+import { withErrorHandling, validateOrError } from '@/lib/error-handling'
 
 export async function login(formData: FormData) {
   const supabase = await createClient()
@@ -10,6 +12,12 @@ export async function login(formData: FormData) {
   const data = {
     email: formData.get('email') as string,
     password: formData.get('password') as string,
+  }
+
+  // Validate input
+  const validation = validateOrError(loginSchema, data)
+  if (validation.error) {
+    return { error: validation.error }
   }
 
   const { error } = await supabase.auth.signInWithPassword(data)
@@ -34,12 +42,24 @@ export async function login(formData: FormData) {
 export async function signup(formData: FormData) {
   const supabase = await createClient()
 
-  const data = {
+  const inputData = {
+    name: formData.get('name') as string,
     email: formData.get('email') as string,
     password: formData.get('password') as string,
+  }
+
+  // Validate input
+  const validation = validateOrError(signupSchema, inputData)
+  if (validation.error) {
+    return { error: validation.error }
+  }
+
+  const data = {
+    email: inputData.email,
+    password: inputData.password,
     options: {
       data: {
-        name: formData.get('name') as string,
+        name: inputData.name,
       },
     },
   }

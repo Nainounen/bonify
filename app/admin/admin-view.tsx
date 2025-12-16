@@ -3,14 +3,16 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Trash2, Users, Wifi, Smartphone, AlertTriangle, RefreshCw, Palette, Check } from 'lucide-react'
+import { Trash2, Users, Wifi, Smartphone, AlertTriangle, RefreshCw, Palette, Check, Download } from 'lucide-react'
 import { deleteAllSales, deleteUser } from './actions'
+import { exportToCSV, formatSalesForExport } from '@/lib/export'
 import { toast } from 'sonner'
 import { signOut } from '@/app/login/actions'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { themes, GlobalTheme } from '@/lib/themes'
+import { themes } from '@/lib/themes'
+import { rateLimiter, RATE_LIMITS } from '@/lib/rate-limiter'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,6 +70,31 @@ export function AdminView({ stats, users }: AdminViewProps) {
     }
   }
 
+  const handleExportSales = async () => {
+    if (!rateLimiter.check('export', RATE_LIMITS.EXPORT)) {
+      const resetTime = rateLimiter.getResetTime('export', RATE_LIMITS.EXPORT)
+      toast.error(`Rate limit exceeded. Try again in ${Math.ceil(resetTime / 1000)}s`)
+      return
+    }
+
+    try {
+      // Fetch all sales data
+      const salesData = users.flatMap(user => 
+        user.sales?.map((sale: any) => ({
+          ...sale,
+          employee_name: user.name,
+          employee_email: user.email
+        })) || []
+      )
+      
+      const csvData = formatSalesForExport(salesData)
+      exportToCSV(csvData, `all-sales-${new Date().toISOString().split('T')[0]}.csv`)
+      toast.success('Sales exported successfully')
+    } catch (error) {
+      toast.error('Failed to export sales')
+    }
+  }
+
   const pieData = [
     { name: 'Internet', value: stats.internet },
     { name: 'Mobile', value: stats.mobile },
@@ -115,6 +142,9 @@ export function AdminView({ stats, users }: AdminViewProps) {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+            <Button variant="outline" size="icon" onClick={handleExportSales} className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass}`}>
+              <Download className="h-4 w-4" />
+            </Button>
             <Button variant="outline" size="icon" onClick={() => router.refresh()} className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass}`}>
               <RefreshCw className="h-4 w-4" />
             </Button>

@@ -1,14 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { CounterButton } from '@/components/counter-button'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import * as Icons from 'lucide-react'
-import { Zap, LogOut } from 'lucide-react'
+import { Zap, LogOut, Undo2, Palette } from 'lucide-react'
 import { themes } from '@/lib/themes'
 import { signOut } from '@/app/login/actions'
-import { Palette } from 'lucide-react'
+import { undoLastSale } from '@/app/dashboard/undo-actions'
+import { toast } from 'sonner'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,9 +24,21 @@ type DashboardViewProps = {
 export function DashboardView({ stats }: DashboardViewProps) {
   const [category, setCategory] = useState<'Internet' | 'Mobile'>('Internet')
   const [currentThemeId, setCurrentThemeId] = useState('default')
+  const [isPending, startTransition] = useTransition()
 
   const globalTheme = themes[currentThemeId]
   const theme = globalTheme.variants[category]
+
+  const handleUndo = () => {
+    startTransition(async () => {
+      const result = await undoLastSale()
+      if (result.error) {
+        toast.error(result.error)
+      } else {
+        toast.success('Last sale deleted successfully')
+      }
+    })
+  }
 
   // Filter sales based on category
   const filteredSales = stats.sales.filter((s: any) => s.category === category)
@@ -57,6 +70,15 @@ export function DashboardView({ stats }: DashboardViewProps) {
             <p className={`${theme.text.secondary} text-xs`}>{currentTier?.name || 'Starter'} Tier</p>
           </div>
           <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleUndo}
+              disabled={isPending || stats.sales.length === 0}
+              className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-white/10 disabled:opacity-50`}
+            >
+              <Undo2 className="h-4 w-4" />
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-white/10`}>
