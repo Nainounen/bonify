@@ -18,7 +18,7 @@ export function DashboardSkeleton() {
     <div className={`min-h-screen transition-colors duration-700 ${theme.background}`}>
       {/* Header Bar */}
       <div className={`sticky top-0 z-50 border-b ${theme.navBar} ${theme.navBarBorder}`}>
-        <div className="container mx-auto max-w-2xl px-4 py-3 flex items-center justify-between">
+        <div className="container mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
           <div>
             <Skeleton className={`h-5 w-32 mb-1 ${theme.card}`} />
             <Skeleton className={`h-4 w-24 ${theme.card}`} />
@@ -27,7 +27,10 @@ export function DashboardSkeleton() {
         </div>
       </div>
 
-      <div className="container mx-auto max-w-2xl px-4 pb-20">
+      <div className="w-full pb-20">
+        <div className="container mx-auto max-w-7xl px-4 lg:grid lg:grid-cols-12 lg:gap-8">
+        {/* Main Content */}
+        <div className="mx-auto max-w-2xl lg:max-w-none lg:col-span-8 xl:col-span-9">
         {/* Hero Stats Section */}
         <div className="py-8 text-center">
           <Skeleton className={`h-8 w-48 mx-auto mb-6 ${theme.card}`} />
@@ -61,6 +64,17 @@ export function DashboardSkeleton() {
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <Skeleton key={i} className={`h-24 w-full rounded-2xl ${theme.card}`} />
           ))}
+        </div>
+        </div>
+        {/* End Main Content */}
+
+        {/* Desktop-only Side Panel Skeleton */}
+        <div className="hidden lg:block lg:col-span-4 xl:col-span-3">
+          <div className="sticky top-24 space-y-4">
+            <Skeleton className={`h-48 w-full rounded-3xl ${theme.card}`} />
+            <Skeleton className={`h-96 w-full rounded-3xl ${theme.card}`} />
+          </div>
+        </div>
         </div>
       </div>
     </div>

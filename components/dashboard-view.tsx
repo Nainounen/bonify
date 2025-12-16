@@ -79,7 +79,7 @@ export function DashboardView({ stats }: DashboardViewProps) {
     <div className={`min-h-screen transition-colors duration-700 ${theme.background}`}>
       {/* Header Bar */}
       <div className={`sticky top-0 z-50 border-b ${theme.navBar} ${theme.navBarBorder} safe-top`}>
-        <div className="container mx-auto max-w-2xl px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
+        <div className="container mx-auto max-w-7xl px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
           <div className="min-w-0 flex-1 sm:flex-none">
             <p className={`${theme.text.primary} text-sm sm:text-base font-medium truncate`}>{stats.employee!.name}</p>
             <p className={`${theme.text.secondary} text-xs sm:text-sm`}>{currentTier?.name || 'Starter'} Tier</p>
@@ -147,10 +147,10 @@ export function DashboardView({ stats }: DashboardViewProps) {
         </div>
       </div>
 
-      <div className="container mx-auto max-w-7xl px-3 sm:px-4 md:px-6 pb-24 sm:pb-20 safe-bottom">
-        <div className="lg:grid lg:grid-cols-12 lg:gap-8">
+      <div className="w-full pb-24 sm:pb-20 safe-bottom">
+        <div className="container mx-auto max-w-7xl px-3 sm:px-4 md:px-6 lg:grid lg:grid-cols-12 lg:gap-8">
         {/* Main Content */}
-        <div className="lg:col-span-8 xl:col-span-9">
+        <div className="mx-auto max-w-2xl lg:max-w-none lg:col-span-8 xl:col-span-9">
         {/* Hero Stats Section */}
         <div className="py-6 sm:py-8 text-center">
           <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full backdrop-blur-sm mb-4 sm:mb-6 ${theme.glass}`}>
