@@ -1,17 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { login, signup } from './actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Trophy } from 'lucide-react'
+import { Logo } from '@/components/logo'
+import { themes } from '@/lib/themes'
 
 export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [theme, setTheme] = useState('default')
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('bonify-theme') || 'default'
+    setTheme(savedTheme)
+  }, [])
 
   async function handleSubmit(formData: FormData) {
     setLoading(true)
@@ -25,12 +32,15 @@ export default function LoginPage() {
     }
   }
 
+  const currentTheme = themes[theme]
+  const background = currentTheme.variants.Internet.background
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-3 sm:p-4 md:p-6 safe-top safe-bottom">
+    <div className={`flex min-h-screen items-center justify-center ${background} p-3 sm:p-4 md:p-6 safe-top safe-bottom`}>
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="space-y-2 sm:space-y-3 text-center pb-4 sm:pb-6">
-          <div className="mx-auto flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-lg">
-            <Trophy className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
+          <div className="mx-auto flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center">
+            <Logo className="h-14 w-14 sm:h-16 sm:w-16 text-primary" />
           </div>
           <CardTitle className="text-xl sm:text-2xl md:text-3xl">Bonify</CardTitle>
           <CardDescription className="text-sm sm:text-base">
