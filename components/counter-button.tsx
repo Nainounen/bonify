@@ -153,30 +153,30 @@ export function CounterButton({
       <button
         onClick={handleClick}
         disabled={isPending}
-        className={`relative h-40 w-40 sm:h-48 sm:w-48 md:h-56 md:w-56 rounded-full font-bold shadow-2xl transition-all active:scale-95 touch-manipulation ${isAnimating ? 'scale-95' : 'hover:scale-105'
-          } ${currentVariant.buttonGradient} disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden`}
+        className={`relative h-40 w-40 sm:h-48 sm:w-48 md:h-56 md:w-56 rounded-full font-bold transition-all active:scale-95 touch-manipulation ${isAnimating ? 'scale-95' : 'hover:scale-105'
+          } ${currentVariant.buttonGradient} disabled:opacity-50 disabled:cursor-not-allowed`}
         style={{
           boxShadow: `0 20px 60px rgba(${currentVariant.glowColor}, 0.4), 0 0 0 0 rgba(${currentVariant.glowColor}, 0.7)`,
           animation: isPending ? 'none' : 'pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
         }}
       >
-        <div className="absolute inset-0 rounded-full bg-white/20 blur-xl"></div>
+        {/* Ripple container */}
+        <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+          {ripples.map(ripple => (
+            <span
+              key={ripple.id}
+              className="absolute rounded-full bg-white/40 animate-ripple"
+              style={{
+                left: ripple.x,
+                top: ripple.y,
+                width: 0,
+                height: 0,
+              }}
+            />
+          ))}
+        </div>
 
-        {/* Ripple effects */}
-        {ripples.map(ripple => (
-          <span
-            key={ripple.id}
-            className="absolute rounded-full bg-white/40 animate-ripple"
-            style={{
-              left: ripple.x,
-              top: ripple.y,
-              width: 0,
-              height: 0,
-            }}
-          />
-        ))}
-
-        <div className="relative flex flex-col items-center justify-center h-full text-white">
+        <div className="relative flex flex-col items-center justify-center h-full text-white z-10">
           <Plus className={`h-12 w-12 sm:h-16 sm:w-16 mb-1 sm:mb-2 drop-shadow-lg transition-transform duration-500 ${isAnimating ? 'rotate-180' : ''}`} strokeWidth={3} />
           <span className="text-xs sm:text-sm font-medium uppercase tracking-wider opacity-90">Add Sale</span>
           <span className="text-[10px] sm:text-xs opacity-75 mt-0.5 sm:mt-1 font-medium">{category}</span>
