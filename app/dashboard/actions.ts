@@ -75,7 +75,7 @@ export async function getEmployeeStats() {
         id: user.id,
         email: user.email!,
         name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
-      })
+      } as any)
       .select()
       .single()
     
