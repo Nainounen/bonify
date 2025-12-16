@@ -22,7 +22,7 @@ export async function getLeaderboard() {
     return { error: 'Not authenticated' }
   }
 
-  // Fetch all employees with their sales
+  // Fetch all employees with their sales, excluding admin and list users
   const { data: employees, error: employeesError } = await supabase
     .from('employees')
     .select(`
@@ -33,6 +33,7 @@ export async function getLeaderboard() {
       )
     `)
     .neq('email', 'list@admin.com')
+    .neq('email', 'admin@admin.com')
 
   if (employeesError) {
     return { error: employeesError.message }
