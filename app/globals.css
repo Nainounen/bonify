@@ -192,9 +192,16 @@
   /* Sonner Toast Overrides */
   [data-sonner-toast] {
     padding: 16px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
   }
   
-  [data-sonner-toast][data-styled="true"] {
+  [data-sonner-toast][data-type="success"],
+  [data-sonner-toast][data-type="error"],
+  [data-sonner-toast][data-type="warning"],
+  [data-sonner-toast][data-type="info"],
+  [data-sonner-toast][data-type="loading"] {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
