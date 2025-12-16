@@ -3,12 +3,10 @@ import { createClient } from '@/lib/supabase/server'
 import { getEmployeeStats } from './actions'
 import { signOut } from '../login/actions'
 import { CounterButton } from '@/components/counter-button'
-import { TierBadge } from '@/components/tier-badge'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
-import { LogOut, TrendingUp, DollarSign, Target, Zap } from 'lucide-react'
+import { LogOut, Zap } from 'lucide-react'
 import * as Icons from 'lucide-react'
-import type { Database } from '@/lib/supabase/types'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -29,8 +27,8 @@ export default async function DashboardPage() {
 
   const progressToNext = stats.nextTier
     ? ((stats.totalSales - (stats.currentTier?.contracts_required || 0)) /
-        (stats.nextTier.contracts_required - (stats.currentTier?.contracts_required || 0))) *
-      100
+      (stats.nextTier.contracts_required - (stats.currentTier?.contracts_required || 0))) *
+    100
     : 100
 
   return (
@@ -58,7 +56,7 @@ export default async function DashboardPage() {
             <Zap className="h-4 w-4 text-yellow-400" />
             <span className="text-sm font-medium text-white/90">{stats.totalSales} Contracts Sold</span>
           </div>
-          
+
           <div className="mb-6">
             <div className="text-7xl font-bold text-white mb-2">{stats.totalSales}</div>
             <p className="text-white/60 text-sm uppercase tracking-wider">Total Sales</p>
@@ -118,53 +116,47 @@ export default async function DashboardPage() {
               const isUnlocked = stats.totalSales >= tier.contracts_required
               const isCurrent = stats.currentTier?.id === tier.id
               const IconComponent = (Icons as any)[tier.icon] || Icons.Star
-              
+
               return (
-                <div 
+                <div
                   key={tier.id}
-                  className={`relative p-4 rounded-2xl transition-all ${
-                    isUnlocked 
-                      ? 'bg-gradient-to-r from-white/15 to-white/5 border-2' 
+                  className={`relative p-4 rounded-2xl transition-all ${isUnlocked
+                      ? 'bg-gradient-to-r from-white/15 to-white/5 border-2'
                       : 'bg-white/5 border'
-                  } border-white/20 ${
-                    isCurrent ? 'ring-2 ring-white/40 ring-offset-2 ring-offset-purple-900' : ''
-                  }`}
+                    } border-white/20 ${isCurrent ? 'ring-2 ring-white/40 ring-offset-2 ring-offset-purple-900' : ''
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div 
-                        className={`flex items-center justify-center w-12 h-12 rounded-xl ${
-                          isUnlocked ? 'bg-white/20' : 'bg-white/5'
-                        }`}
+                      <div
+                        className={`flex items-center justify-center w-12 h-12 rounded-xl ${isUnlocked ? 'bg-white/20' : 'bg-white/5'
+                          }`}
                         style={{ backgroundColor: isUnlocked ? `${tier.color}30` : undefined }}
                       >
-                        <IconComponent 
-                          className="h-6 w-6" 
+                        <IconComponent
+                          className="h-6 w-6"
                           style={{ color: isUnlocked ? tier.color : '#ffffff50' }}
                         />
                       </div>
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className={`font-semibold ${
-                            isUnlocked ? 'text-white' : 'text-white/40'
-                          }`}>{tier.name}</h4>
+                          <h4 className={`font-semibold ${isUnlocked ? 'text-white' : 'text-white/40'
+                            }`}>{tier.name}</h4>
                           {isCurrent && (
                             <span className="px-2 py-0.5 text-xs font-medium bg-purple-500/30 text-purple-200 rounded-full">
                               Current
                             </span>
                           )}
                         </div>
-                        <p className={`text-xs ${
-                          isUnlocked ? 'text-white/60' : 'text-white/30'
-                        }`}>
+                        <p className={`text-xs ${isUnlocked ? 'text-white/60' : 'text-white/30'
+                          }`}>
                           {tier.contracts_required} contracts
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className={`text-lg font-bold ${
-                        isUnlocked ? 'text-emerald-400' : 'text-white/30'
-                      }`}>
+                      <div className={`text-lg font-bold ${isUnlocked ? 'text-emerald-400' : 'text-white/30'
+                        }`}>
                         CHF {tier.bonus_amount}
                       </div>
                       {isUnlocked ? (
