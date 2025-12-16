@@ -30,7 +30,7 @@ export function DashboardSkeleton() {
       <div className="w-full pb-20">
         <div className="container mx-auto max-w-7xl px-4 lg:grid lg:grid-cols-12 lg:gap-8">
         {/* Main Content */}
-        <div className="mx-auto max-w-2xl lg:max-w-none lg:col-span-8 xl:col-span-9">
+        <div className="mx-auto max-w-2xl lg:max-w-none lg:col-span-8 lg:col-start-2 xl:col-span-8 xl:col-start-2">
         {/* Hero Stats Section */}
         <div className="py-8 text-center">
           <Skeleton className={`h-8 w-48 mx-auto mb-6 ${theme.card}`} />
@@ -69,7 +69,7 @@ export function DashboardSkeleton() {
         {/* End Main Content */}
 
         {/* Desktop-only Side Panel Skeleton */}
-        <div className="hidden lg:block lg:col-span-4 xl:col-span-3">
+        <div className="hidden lg:block lg:col-span-3 lg:col-start-10 xl:col-span-3 xl:col-start-10">
           <div className="sticky top-24 space-y-4">
             <Skeleton className={`h-48 w-full rounded-3xl ${theme.card}`} />
             <Skeleton className={`h-96 w-full rounded-3xl ${theme.card}`} />

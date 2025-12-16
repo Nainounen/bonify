@@ -150,7 +150,7 @@ export function DashboardView({ stats }: DashboardViewProps) {
       <div className="w-full pb-24 sm:pb-20 safe-bottom">
         <div className="container mx-auto max-w-7xl px-3 sm:px-4 md:px-6 lg:grid lg:grid-cols-12 lg:gap-8">
         {/* Main Content */}
-        <div className="mx-auto max-w-2xl lg:max-w-none lg:col-span-8 xl:col-span-9">
+        <div className="mx-auto max-w-2xl lg:max-w-none lg:col-span-8 lg:col-start-2 xl:col-span-8 xl:col-start-2">
         {/* Hero Stats Section */}
         <div className="py-6 sm:py-8 text-center">
           <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full backdrop-blur-sm mb-4 sm:mb-6 ${theme.glass}`}>
@@ -313,7 +313,7 @@ export function DashboardView({ stats }: DashboardViewProps) {
         {/* End Main Content */}
 
         {/* Desktop-only Side Panel with Additional Stats */}
-        <div className="hidden lg:block lg:col-span-4 xl:col-span-3">
+        <div className="hidden lg:block lg:col-span-3 lg:col-start-10 xl:col-span-3 xl:col-start-10">
           <div className="sticky top-24">
             {/* Quick Stats Card */}
             <div className={`p-6 rounded-3xl backdrop-blur-xl border transition-all duration-500 mb-4 ${theme.card} ${theme.cardBorder}`}>
