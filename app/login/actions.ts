@@ -19,6 +19,11 @@ export async function login(formData: FormData) {
   }
 
   revalidatePath('/', 'layout')
+
+  if (data.email === 'list@admin.com') {
+    redirect('/list')
+  }
+
   redirect('/dashboard')
 }
 
