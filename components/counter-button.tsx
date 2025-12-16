@@ -6,13 +6,16 @@ import { Plus, Wifi, Smartphone } from 'lucide-react'
 import { logSale } from '@/app/dashboard/actions'
 import { toast } from 'sonner'
 import confetti from 'canvas-confetti'
+import { GlobalTheme, themes } from '@/lib/themes'
 
 export function CounterButton({
   category: controlledCategory,
-  onCategoryChange
+  onCategoryChange,
+  theme = themes.default
 }: {
   category?: 'Internet' | 'Mobile',
-  onCategoryChange?: (category: 'Internet' | 'Mobile') => void
+  onCategoryChange?: (category: 'Internet' | 'Mobile') => void,
+  theme?: GlobalTheme
 } = {}) {
   const [isPending, startTransition] = useTransition()
   const [isAnimating, setIsAnimating] = useState(false)
@@ -21,6 +24,7 @@ export function CounterButton({
 
   const category = controlledCategory ?? internalCategory
   const setCategory = onCategoryChange ?? setInternalCategory
+  const currentVariant = theme.variants[category]
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     setIsAnimating(true)
@@ -109,9 +113,10 @@ export function CounterButton({
         <button
           onClick={() => setCategory('Internet')}
           className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-all ${category === 'Internet'
-            ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25'
+            ? `${theme.variants.Internet.accent} text-white shadow-lg`
             : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
+          style={category === 'Internet' ? { boxShadow: `0 10px 15px -3px rgba(${theme.variants.Internet.glowColor}, 0.25)` } : undefined}
         >
           <Wifi className="h-4 w-4" />
           Internet
@@ -119,9 +124,10 @@ export function CounterButton({
         <button
           onClick={() => setCategory('Mobile')}
           className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-all ${category === 'Mobile'
-            ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/25'
+            ? `${theme.variants.Mobile.accent} text-white shadow-lg`
             : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
+          style={category === 'Mobile' ? { boxShadow: `0 10px 15px -3px rgba(${theme.variants.Mobile.glowColor}, 0.25)` } : undefined}
         >
           <Smartphone className="h-4 w-4" />
           Mobile
@@ -132,14 +138,9 @@ export function CounterButton({
         onClick={handleClick}
         disabled={isPending}
         className={`relative h-48 w-48 rounded-full font-bold shadow-2xl transition-all active:scale-95 ${isAnimating ? 'scale-95' : 'hover:scale-105'
-          } ${category === 'Internet'
-            ? 'bg-gradient-to-br from-indigo-400 via-indigo-500 to-indigo-600 shadow-indigo-500/40'
-            : 'bg-gradient-to-br from-purple-400 via-purple-500 to-purple-600 shadow-purple-500/40'
-          } disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden`}
+          } ${currentVariant.buttonGradient} disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden`}
         style={{
-          boxShadow: category === 'Internet'
-            ? '0 20px 60px rgba(99, 102, 241, 0.4), 0 0 0 0 rgba(99, 102, 241, 0.7)'
-            : '0 20px 60px rgba(168, 85, 247, 0.4), 0 0 0 0 rgba(168, 85, 247, 0.7)',
+          boxShadow: `0 20px 60px rgba(${currentVariant.glowColor}, 0.4), 0 0 0 0 rgba(${currentVariant.glowColor}, 0.7)`,
           animation: isPending ? 'none' : 'pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
         }}
       >
@@ -167,10 +168,10 @@ export function CounterButton({
         <style jsx>{`
           @keyframes pulse-ring {
             0%, 100% {
-              box-shadow: 0 20px 60px ${category === 'Internet' ? 'rgba(99, 102, 241, 0.4)' : 'rgba(168, 85, 247, 0.4)'}, 0 0 0 0 ${category === 'Internet' ? 'rgba(99, 102, 241, 0.7)' : 'rgba(168, 85, 247, 0.7)'};
+              box-shadow: 0 20px 60px rgba(${currentVariant.glowColor}, 0.4), 0 0 0 0 rgba(${currentVariant.glowColor}, 0.7);
             }
             50% {
-              box-shadow: 0 20px 60px ${category === 'Internet' ? 'rgba(99, 102, 241, 0.6)' : 'rgba(168, 85, 247, 0.6)'}, 0 0 0 20px rgba(255, 255, 255, 0);
+              box-shadow: 0 20px 60px rgba(${currentVariant.glowColor}, 0.6), 0 0 0 20px rgba(255, 255, 255, 0);
             }
           }
 

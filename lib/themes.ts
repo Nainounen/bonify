@@ -10,6 +10,16 @@ export type CategoryColors = {
     secondary: string
     muted: string
   }
+  buttonGradient: string
+  glowColor: string // RGB values like "99, 102, 241"
+  navBar: string
+  navBarBorder: string
+  glass: string
+  glassBorder: string
+  cardInactive: string
+  cardInactiveBorder: string
+  divider: string
+  iconMuted: string
 }
 
 export type GlobalTheme = {
@@ -37,7 +47,17 @@ export const themes: Record<string, GlobalTheme> = {
           primary: 'text-white',
           secondary: 'text-indigo-100',
           muted: 'text-indigo-200/60'
-        }
+        },
+        buttonGradient: 'bg-gradient-to-br from-indigo-400 via-indigo-500 to-indigo-600 shadow-indigo-500/40',
+        glowColor: '99, 102, 241',
+        navBar: 'bg-black/20 backdrop-blur-xl',
+        navBarBorder: 'border-white/10',
+        glass: 'bg-white/10',
+        glassBorder: 'border-white/10',
+        cardInactive: 'bg-white/5',
+        cardInactiveBorder: 'border-white/10',
+        divider: 'bg-white/20',
+        iconMuted: 'text-white/30'
       },
       Mobile: {
         background: 'bg-gradient-to-br from-fuchsia-950 via-purple-900 to-slate-900',
@@ -50,7 +70,69 @@ export const themes: Record<string, GlobalTheme> = {
           primary: 'text-white',
           secondary: 'text-purple-100',
           muted: 'text-purple-200/60'
-        }
+        },
+        buttonGradient: 'bg-gradient-to-br from-purple-400 via-purple-500 to-purple-600 shadow-purple-500/40',
+        glowColor: '168, 85, 247',
+        navBar: 'bg-black/20 backdrop-blur-xl',
+        navBarBorder: 'border-white/10',
+        glass: 'bg-white/10',
+        glassBorder: 'border-white/10',
+        cardInactive: 'bg-white/5',
+        cardInactiveBorder: 'border-white/10',
+        divider: 'bg-white/20',
+        iconMuted: 'text-white/30'
+      }
+    }
+  },
+  light: {
+    id: 'light',
+    name: 'Daylight',
+    variants: {
+      Internet: {
+        background: 'bg-gradient-to-br from-blue-50 via-white to-slate-100',
+        card: 'bg-white shadow-md',
+        cardBorder: 'border-blue-200',
+        primary: 'text-blue-700',
+        secondary: 'text-slate-700',
+        accent: 'bg-blue-600',
+        text: {
+          primary: 'text-slate-950',
+          secondary: 'text-slate-700',
+          muted: 'text-slate-500'
+        },
+        buttonGradient: 'bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 shadow-blue-600/30',
+        glowColor: '37, 99, 235',
+        navBar: 'bg-white/90 backdrop-blur-xl',
+        navBarBorder: 'border-slate-300',
+        glass: 'bg-white/80',
+        glassBorder: 'border-slate-300',
+        cardInactive: 'bg-slate-100',
+        cardInactiveBorder: 'border-slate-300',
+        divider: 'bg-slate-300',
+        iconMuted: 'text-slate-400'
+      },
+      Mobile: {
+        background: 'bg-gradient-to-br from-fuchsia-50 via-white to-slate-100',
+        card: 'bg-white shadow-md',
+        cardBorder: 'border-fuchsia-200',
+        primary: 'text-fuchsia-700',
+        secondary: 'text-slate-700',
+        accent: 'bg-fuchsia-600',
+        text: {
+          primary: 'text-slate-950',
+          secondary: 'text-slate-700',
+          muted: 'text-slate-500'
+        },
+        buttonGradient: 'bg-gradient-to-br from-fuchsia-600 via-fuchsia-700 to-fuchsia-800 shadow-fuchsia-600/30',
+        glowColor: '192, 38, 211',
+        navBar: 'bg-white/90 backdrop-blur-xl',
+        navBarBorder: 'border-slate-300',
+        glass: 'bg-white/80',
+        glassBorder: 'border-slate-300',
+        cardInactive: 'bg-slate-100',
+        cardInactiveBorder: 'border-slate-300',
+        divider: 'bg-slate-300',
+        iconMuted: 'text-slate-400'
       }
     }
   },
@@ -69,7 +151,17 @@ export const themes: Record<string, GlobalTheme> = {
           primary: 'text-white',
           secondary: 'text-emerald-100',
           muted: 'text-emerald-200/60'
-        }
+        },
+        buttonGradient: 'bg-gradient-to-br from-emerald-400 via-emerald-500 to-emerald-600 shadow-emerald-500/40',
+        glowColor: '16, 185, 129',
+        navBar: 'bg-black/20 backdrop-blur-xl',
+        navBarBorder: 'border-white/10',
+        glass: 'bg-white/10',
+        glassBorder: 'border-white/10',
+        cardInactive: 'bg-white/5',
+        cardInactiveBorder: 'border-white/10',
+        divider: 'bg-white/20',
+        iconMuted: 'text-white/30'
       },
       Mobile: {
         background: 'bg-gradient-to-br from-amber-950 via-orange-900 to-slate-900',
@@ -82,7 +174,17 @@ export const themes: Record<string, GlobalTheme> = {
           primary: 'text-white',
           secondary: 'text-orange-100',
           muted: 'text-orange-200/60'
-        }
+        },
+        buttonGradient: 'bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 shadow-orange-500/40',
+        glowColor: '249, 115, 22',
+        navBar: 'bg-black/20 backdrop-blur-xl',
+        navBarBorder: 'border-white/10',
+        glass: 'bg-white/10',
+        glassBorder: 'border-white/10',
+        cardInactive: 'bg-white/5',
+        cardInactiveBorder: 'border-white/10',
+        divider: 'bg-white/20',
+        iconMuted: 'text-white/30'
       }
     }
   },
@@ -101,7 +203,17 @@ export const themes: Record<string, GlobalTheme> = {
           primary: 'text-white',
           secondary: 'text-slate-300',
           muted: 'text-slate-500'
-        }
+        },
+        buttonGradient: 'bg-gradient-to-br from-sky-400 via-sky-500 to-sky-600 shadow-sky-500/40',
+        glowColor: '14, 165, 233',
+        navBar: 'bg-black/20 backdrop-blur-xl',
+        navBarBorder: 'border-white/10',
+        glass: 'bg-white/10',
+        glassBorder: 'border-white/10',
+        cardInactive: 'bg-white/5',
+        cardInactiveBorder: 'border-white/10',
+        divider: 'bg-white/20',
+        iconMuted: 'text-white/30'
       },
       Mobile: {
         background: 'bg-gradient-to-br from-zinc-950 via-neutral-900 to-black',
@@ -114,39 +226,17 @@ export const themes: Record<string, GlobalTheme> = {
           primary: 'text-white',
           secondary: 'text-zinc-300',
           muted: 'text-zinc-500'
-        }
-      }
-    }
-  },
-  swisscom: {
-    id: 'swisscom',
-    name: 'Swisscom',
-    variants: {
-      Internet: {
-        background: 'bg-gradient-to-br from-[#001155] via-[#0445C8] to-[#040D33]',
-        card: 'bg-[#001155]/50',
-        cardBorder: 'border-[#11AAFF]/30',
-        primary: 'text-[#11AAFF]',
-        secondary: 'text-[#00A3BF]',
-        accent: 'bg-[#0445C8]',
-        text: {
-          primary: 'text-white',
-          secondary: 'text-[#EEF3F6]',
-          muted: 'text-[#DDE3E7]/60'
-        }
-      },
-      Mobile: {
-        background: 'bg-gradient-to-br from-[#040D33] via-[#333333] to-black',
-        card: 'bg-[#F20505]/10',
-        cardBorder: 'border-[#F20505]/20',
-        primary: 'text-[#F20505]',
-        secondary: 'text-[#E32065]',
-        accent: 'bg-[#F20505]',
-        text: {
-          primary: 'text-white',
-          secondary: 'text-[#EEF3F6]',
-          muted: 'text-[#DDE3E7]/60'
-        }
+        },
+        buttonGradient: 'bg-gradient-to-br from-rose-400 via-rose-500 to-rose-600 shadow-rose-500/40',
+        glowColor: '244, 63, 94',
+        navBar: 'bg-black/20 backdrop-blur-xl',
+        navBarBorder: 'border-white/10',
+        glass: 'bg-white/10',
+        glassBorder: 'border-white/10',
+        cardInactive: 'bg-white/5',
+        cardInactiveBorder: 'border-white/10',
+        divider: 'bg-white/20',
+        iconMuted: 'text-white/30'
       }
     }
   }

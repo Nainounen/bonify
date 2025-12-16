@@ -24,6 +24,10 @@ export async function login(formData: FormData) {
     redirect('/list')
   }
 
+  if (data.email === 'admin@admin.com') {
+    redirect('/admin')
+  }
+
   redirect('/dashboard')
 }
 

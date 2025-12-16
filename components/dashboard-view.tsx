@@ -50,7 +50,7 @@ export function DashboardView({ stats }: DashboardViewProps) {
   return (
     <div className={`min-h-screen transition-colors duration-700 ${theme.background}`}>
       {/* Header Bar */}
-      <div className="sticky top-0 z-50 backdrop-blur-xl bg-black/20 border-b border-white/10">
+      <div className={`sticky top-0 z-50 border-b ${theme.navBar} ${theme.navBarBorder}`}>
         <div className="container mx-auto max-w-2xl px-4 py-3 flex items-center justify-between">
           <div>
             <p className={`${theme.text.primary} text-sm font-medium`}>{stats.employee!.name}</p>
@@ -59,7 +59,7 @@ export function DashboardView({ stats }: DashboardViewProps) {
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10">
+                <Button variant="ghost" size="sm" className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-white/10`}>
                   <Palette className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -82,7 +82,7 @@ export function DashboardView({ stats }: DashboardViewProps) {
               </DropdownMenuContent>
             </DropdownMenu>
             <form action={signOut}>
-              <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10">
+              <Button variant="ghost" size="sm" className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-white/10`}>
                 <LogOut className="h-4 w-4" />
               </Button>
             </form>
@@ -93,9 +93,9 @@ export function DashboardView({ stats }: DashboardViewProps) {
       <div className="container mx-auto max-w-2xl px-4 pb-20">
         {/* Hero Stats Section */}
         <div className="py-8 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm mb-6">
+          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm mb-6 ${theme.glass}`}>
             <Zap className="h-4 w-4 text-yellow-400" />
-            <span className="text-sm font-medium text-white/90">{stats.totalSales} Total Contracts Sold</span>
+            <span className={`text-sm font-medium ${theme.text.primary}`}>{stats.totalSales} Total Contracts Sold</span>
           </div>
 
           <div className="mb-6">
@@ -104,21 +104,21 @@ export function DashboardView({ stats }: DashboardViewProps) {
           </div>
 
           <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto mb-8">
-            <div className={`rounded-2xl p-3 border transition-all duration-500 ${category === 'Internet' ? `${theme.card} ${theme.cardBorder}` : 'bg-white/5 border-white/10'
+            <div className={`rounded-2xl p-3 border transition-all duration-500 ${category === 'Internet' ? `${theme.card} ${theme.cardBorder}` : `${theme.cardInactive} ${theme.cardInactiveBorder}`
               }`}>
               <div className={`flex items-center justify-center gap-2 mb-1 ${theme.secondary}`}>
                 <Icons.Wifi className="h-4 w-4" />
                 <span className="text-xs font-medium uppercase">Internet</span>
               </div>
-              <div className="text-xl font-bold text-white">{internetSales}</div>
+              <div className={`text-xl font-bold ${theme.text.primary}`}>{internetSales}</div>
             </div>
-            <div className={`rounded-2xl p-3 border transition-all duration-500 ${category === 'Mobile' ? `${theme.card} ${theme.cardBorder}` : 'bg-white/5 border-white/10'
+            <div className={`rounded-2xl p-3 border transition-all duration-500 ${category === 'Mobile' ? `${theme.card} ${theme.cardBorder}` : `${theme.cardInactive} ${theme.cardInactiveBorder}`
               }`}>
               <div className={`flex items-center justify-center gap-2 mb-1 ${theme.secondary}`}>
                 <Icons.Smartphone className="h-4 w-4" />
                 <span className="text-xs font-medium uppercase">Mobile</span>
               </div>
-              <div className="text-xl font-bold text-white">{mobileSales}</div>
+              <div className={`text-xl font-bold ${theme.text.primary}`}>{mobileSales}</div>
             </div>
           </div>
 
@@ -127,7 +127,7 @@ export function DashboardView({ stats }: DashboardViewProps) {
               <div className="text-2xl font-bold text-emerald-400">CHF {stats.totalBonus.toFixed(0)}</div>
               <p className={`${theme.text.muted} text-xs uppercase tracking-wide mt-1`}>Total Earned</p>
             </div>
-            <div className="h-12 w-px bg-white/20"></div>
+            <div className={`h-12 w-px ${theme.divider}`}></div>
             <div className="text-center">
               <div className={`text-2xl font-bold ${theme.primary} transition-colors duration-500`}>{nextTier ? nextTier.contracts_required - filteredTotalSales : 0}</div>
               <p className={`${theme.text.muted} text-xs uppercase tracking-wide mt-1`}>To Next {category} Tier</p>
@@ -141,6 +141,7 @@ export function DashboardView({ stats }: DashboardViewProps) {
           <CounterButton
             category={category}
             onCategoryChange={setCategory}
+            theme={globalTheme}
           />
         </div>
 
@@ -185,7 +186,7 @@ export function DashboardView({ stats }: DashboardViewProps) {
                   key={tier.id}
                   className={`relative p-4 rounded-2xl transition-all duration-500 ${isUnlocked
                     ? `bg-gradient-to-r from-white/15 to-white/5 border-2 ${theme.cardBorder}`
-                    : 'bg-white/5 border border-white/10'
+                    : `${theme.cardInactive} border ${theme.cardInactiveBorder}`
                     } ${isCurrent ? `ring-2 ring-white/40 ring-offset-2 ring-offset-slate-900` : ''
                     }`}
                 >
@@ -203,7 +204,7 @@ export function DashboardView({ stats }: DashboardViewProps) {
                       </div>
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className={`font-semibold ${isUnlocked ? theme.text.primary : 'text-white/40'
+                          <h4 className={`font-semibold ${isUnlocked ? theme.text.primary : theme.iconMuted
                             }`}>{tier.name}</h4>
                           {isCurrent && (
                             <span className={`px-2 py-0.5 text-xs font-medium ${theme.accent}/30 ${theme.secondary} rounded-full`}>
@@ -211,18 +212,18 @@ export function DashboardView({ stats }: DashboardViewProps) {
                             </span>
                           )}
                         </div>
-                        <p className={`text-xs ${isUnlocked ? theme.text.secondary : 'text-white/30'
+                        <p className={`text-xs ${isUnlocked ? theme.text.secondary : theme.iconMuted
                           }`}>
                           {tier.contracts_required} contracts
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className={`text-lg font-bold ${isUnlocked ? 'text-emerald-400' : 'text-white/30'
+                      <div className={`text-lg font-bold ${isUnlocked ? 'text-emerald-400' : theme.iconMuted
                         }`}>
                         CHF {tier.bonus_amount}
                       </div>
-                      <div className="text-xs text-white/30">Bonus</div>
+                      <div className={`text-xs ${theme.iconMuted}`}>Bonus</div>
                     </div>
                   </div>
                 </div>
