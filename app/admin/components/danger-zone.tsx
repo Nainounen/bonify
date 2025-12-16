@@ -37,8 +37,9 @@ export function DangerZone({ theme }: DangerZoneProps) {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.7 }}
+      className="self-start"
     >
-      <Card className={`${theme.card} backdrop-blur-xl border-red-500/30 h-full`}>
+      <Card className={`${theme.card} backdrop-blur-xl border-red-500/30`}>
         <CardHeader>
           <CardTitle className="text-red-500 flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" /> Danger Zone
