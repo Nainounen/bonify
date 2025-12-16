@@ -38,6 +38,10 @@ CREATE POLICY "Users can view their own employee record"
   ON employees FOR SELECT
   USING (auth.uid() = id);
 
+CREATE POLICY "Admin can view all employee records"
+  ON employees FOR SELECT
+  USING (auth.jwt() ->> 'email' = 'admin@admin.com');
+
 CREATE POLICY "Users can insert their own employee record"
   ON employees FOR INSERT
   WITH CHECK (auth.uid() = id);
@@ -51,9 +55,17 @@ CREATE POLICY "Users can view their own sales"
   ON sales FOR SELECT
   USING (auth.uid() = employee_id);
 
+CREATE POLICY "Admin can view all sales"
+  ON sales FOR SELECT
+  USING (auth.jwt() ->> 'email' = 'admin@admin.com');
+
 CREATE POLICY "Users can insert their own sales"
   ON sales FOR INSERT
   WITH CHECK (auth.uid() = employee_id);
+
+CREATE POLICY "Admin can delete all sales"
+  ON sales FOR DELETE
+  USING (auth.jwt() ->> 'email' = 'admin@admin.com');
 
 -- RLS Policies for bonus_tiers (read-only for all authenticated users)
 CREATE POLICY "Authenticated users can view bonus tiers"

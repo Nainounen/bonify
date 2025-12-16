@@ -13,23 +13,25 @@ export async function logSale(category: 'Internet' | 'Mobile') {
     return { error: 'Not authenticated' }
   }
 
-  // Get current sales count to determine tier
+  // Get current sales count for this category to determine tier
   const { data: sales, error: salesError } = await supabase
     .from('sales')
-    .select('id')
+    .select('id, category')
     .eq('employee_id', user.id)
 
   if (salesError) {
     return { error: salesError.message }
   }
 
-  const newCount = (sales?.length || 0) + 1
+  // Count sales for the specific category
+  const categorySales = sales?.filter(s => s.category === category) || []
+  const newCategoryCount = categorySales.length + 1
 
-  // Get appropriate tier based on new count
+  // Get appropriate tier based on new category count
   const { data: tiers } = await supabase
     .from('bonus_tiers')
     .select('*')
-    .lte('contracts_required', newCount)
+    .lte('contracts_required', newCategoryCount)
     .order('contracts_required', { ascending: false })
     .limit(1)
 
@@ -49,7 +51,7 @@ export async function logSale(category: 'Internet' | 'Mobile') {
   }
 
   revalidatePath('/dashboard')
-  return { success: true, newCount, tier: currentTier }
+  return { success: true, newCount: newCategoryCount, tier: currentTier }
 }
 
 export async function getEmployeeStats() {
