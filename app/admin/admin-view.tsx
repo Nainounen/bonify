@@ -1,25 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Trash2, Users, Wifi, Smartphone, AlertTriangle, RefreshCw, Palette, Check, Download, LayoutDashboard, Trophy, LogOut } from 'lucide-react'
-import { deleteAllSales, deleteUser } from './actions'
-import { exportToCSV, formatSalesForExport } from '@/lib/export'
-import { toast } from 'sonner'
-import { signOut } from '@/app/login/actions'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line } from 'recharts'
-import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { themes, getTheme } from '@/lib/themes'
+import { toast } from 'sonner'
+import { getTheme, themes } from '@/lib/themes'
 import { rateLimiter, RATE_LIMITS } from '@/lib/rate-limiter'
-import Link from 'next/link'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { exportToCSV, formatSalesForExport } from '@/lib/export'
+import { AdminHeader } from './components/admin-header'
+import { StatsCards } from './components/stats-cards'
+import { SalesTrendChart } from './components/sales-trend-chart'
+import { SalesDistributionChart } from './components/sales-distribution-chart'
+import { UsersList } from './components/users-list'
+import { DangerZone } from './components/danger-zone'
 
 type AdminViewProps = {
   stats: {
@@ -32,14 +24,8 @@ type AdminViewProps = {
   users: any[]
 }
 
-const COLORS = ['#6366f1', '#a855f7']
-const USER_COLORS = ['#6366f1', '#a855f7', '#ec4899', '#f59e0b', '#10b981', '#8b5cf6', '#14b8a6', '#f43f5e']
-
 export function AdminView({ stats, users }: AdminViewProps) {
-  const [isDeletingSales, setIsDeletingSales] = useState(false)
-  const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   const [currentThemeId, setCurrentThemeId] = useState('default')
-  const [activeTab, setActiveTab] = useState<'Mobile' | 'Internet'>('Internet')
   const router = useRouter()
   
   // Load theme from localStorage on mount
@@ -57,36 +43,6 @@ export function AdminView({ stats, users }: AdminViewProps) {
   }
   
   const theme = getTheme(currentThemeId).variants.Internet
-
-  const handleDeleteAllSales = async () => {
-    if (!confirm('Are you sure you want to DELETE ALL SALES? This cannot be undone.')) return
-
-    setIsDeletingSales(true)
-    const result = await deleteAllSales()
-    setIsDeletingSales(false)
-
-    if (result.error) {
-      toast.error(result.error)
-    } else {
-      toast.success('All sales deleted successfully')
-      router.refresh()
-    }
-  }
-
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to delete this user? This will also delete all their sales.')) return
-
-    setDeletingUserId(userId)
-    const result = await deleteUser(userId)
-    setDeletingUserId(null)
-
-    if (result.error) {
-      toast.error(result.error)
-    } else {
-      toast.success('User deleted successfully')
-      router.refresh()
-    }
-  }
 
   const handleExportSales = async () => {
     if (!rateLimiter.check('export', RATE_LIMITS.EXPORT)) {
@@ -113,10 +69,9 @@ export function AdminView({ stats, users }: AdminViewProps) {
     }
   }
 
-  const pieData = [
-    { name: 'Internet', value: stats.internet },
-    { name: 'Mobile', value: stats.mobile },
-  ]
+  const handleRefresh = () => {
+    router.refresh()
+  }
 
   return (
     <div className={`min-h-screen p-3 sm:p-6 md:p-8 overflow-hidden relative transition-colors duration-700 ${theme.background} ${theme.text.primary} safe-top safe-bottom`}>
@@ -127,313 +82,24 @@ export function AdminView({ stats, users }: AdminViewProps) {
       </div>
 
       <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6 md:space-y-8 relative z-10">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-          <motion.h1
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className={`text-2xl sm:text-3xl md:text-4xl font-bold ${theme.text.primary}`}
-          >
-            Admin Command Center
-          </motion.h1>
-          <div className="flex gap-1.5 sm:gap-2">
-            <Link href="/dashboard">
-              <Button variant="outline" size="icon" className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass} h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}>
-                <LayoutDashboard className="h-4 w-4 sm:h-5 sm:w-5" />
-              </Button>
-            </Link>
-            <Link href="/list">
-              <Button variant="outline" size="icon" className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass} h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}>
-                <Trophy className="h-4 w-4 sm:h-5 sm:w-5" />
-              </Button>
-            </Link>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button suppressHydrationWarning variant="outline" size="icon" className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass} h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}>
-                  <Palette className="h-4 w-4 sm:h-5 sm:w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 bg-slate-900 border-slate-800 text-white">
-                {Object.values(themes).map((t) => (
-                  <DropdownMenuItem
-                    key={t.id}
-                    onClick={() => handleThemeChange(t.id)}
-                    className="cursor-pointer hover:bg-white/10 focus:bg-white/10"
-                  >
-                    <div className="flex items-center gap-2 w-full">
-                      <div className={`w-4 h-4 rounded-full bg-gradient-to-br ${t.variants.Internet.accent.replace('bg-', 'from-').replace('text-', 'from-')} to-slate-900`} />
-                      <span className={currentThemeId === t.id ? 'font-bold text-white' : 'text-white/70'}>
-                        {t.name}
-                      </span>
-                      {currentThemeId === t.id && <Check className="h-3 w-3 ml-auto" />}
-                    </div>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button variant="outline" size="icon" onClick={handleExportSales} className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass} h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}>
-              <Download className="h-4 w-4 sm:h-5 sm:w-5" />
-            </Button>
-            <Button variant="outline" size="icon" onClick={() => router.refresh()} className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass} h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}>
-              <RefreshCw className="h-4 w-4 sm:h-5 sm:w-5" />
-            </Button>
-            <form action={signOut} className="hidden sm:block">
-              <Button variant="outline" className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass} hover:text-red-400 touch-manipulation`}>Sign Out</Button>
-            </form>
-            <form action={signOut} className="sm:hidden">
-              <Button variant="outline" size="icon" className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass} hover:text-red-400 h-9 w-9 touch-manipulation`}>
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </form>
-          </div>
-        </div>
+        <AdminHeader 
+          theme={theme}
+          currentThemeId={currentThemeId}
+          onThemeChange={handleThemeChange}
+          onExport={handleExportSales}
+          onRefresh={handleRefresh}
+        />
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card className={`${theme.card} backdrop-blur-xl border ${theme.cardBorder} h-full`}>
-              <CardHeader className="pb-2">
-                <CardTitle className={`text-sm font-medium ${theme.text.muted}`}>Total Sales</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className={`text-5xl font-bold ${theme.text.primary}`}>
-                  {stats.total}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+        <StatsCards stats={stats} theme={theme} />
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card className={`${theme.card} backdrop-blur-xl border ${theme.cardBorder} h-full`}>
-              <CardHeader className="pb-2">
-                <CardTitle className={`text-sm font-medium ${theme.primary} flex items-center gap-2`}>
-                  <Wifi className="h-4 w-4" /> Internet
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className={`text-5xl font-bold ${theme.primary}`}>{stats.internet}</div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Card className={`${theme.card} backdrop-blur-xl border ${theme.cardBorder} h-full`}>
-              <CardHeader className="pb-2">
-                <CardTitle className={`text-sm font-medium ${theme.secondary} flex items-center gap-2`}>
-                  <Smartphone className="h-4 w-4" /> Mobile
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className={`text-5xl font-bold ${theme.secondary}`}>{stats.mobile}</div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-
-        {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Card className={`${theme.card} backdrop-blur-xl border ${theme.cardBorder}`}>
-              <CardHeader>
-                <CardTitle className={theme.text.primary}>Sales Trend by User (Last 7 Days)</CardTitle>
-                <div className="flex gap-2 mt-4">
-                  <Button
-                    onClick={() => setActiveTab('Internet')}
-                    variant={activeTab === 'Internet' ? 'default' : 'outline'}
-                    className={`flex-1 ${activeTab === 'Internet' ? theme.buttonGradient : `${theme.card} ${theme.cardBorder}`}`}
-                  >
-                    <Wifi className="h-4 w-4 mr-2" />
-                    Internet
-                  </Button>
-                  <Button
-                    onClick={() => setActiveTab('Mobile')}
-                    variant={activeTab === 'Mobile' ? 'default' : 'outline'}
-                    className={`flex-1 ${activeTab === 'Mobile' ? theme.buttonGradient : `${theme.card} ${theme.cardBorder}`}`}
-                  >
-                    <Smartphone className="h-4 w-4 mr-2" />
-                    Mobile
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={(() => {
-                    // Get all unique dates from the selected category
-                    const categoryData = stats.salesByUserAndDate.filter((d: any) => d.category === activeTab)
-                    const allDates = new Set<string>()
-                    categoryData.forEach((userData: any) => {
-                      userData.data.forEach((d: any) => allDates.add(d.date))
-                    })
-                    
-                    // Create data structure with all dates
-                    const sortedDates = Array.from(allDates).sort((a, b) => 
-                      new Date(a).getTime() - new Date(b).getTime()
-                    )
-                    
-                    return sortedDates.map(date => {
-                      const dataPoint: any = { date }
-                      categoryData.forEach((userData: any) => {
-                        const dateData = userData.data.find((d: any) => d.date === date)
-                        dataPoint[userData.userName] = dateData ? dateData.count : 0
-                      })
-                      return dataPoint
-                    })
-                  })()}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                    <XAxis dataKey="date" stroke="#94a3b8" />
-                    <YAxis stroke="#94a3b8" label={{ value: 'Contracts Sold', angle: -90, position: 'insideLeft', fill: '#94a3b8' }} />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#fff' }}
-                      itemStyle={{ color: '#fff' }}
-                    />
-                    <Legend />
-                    {stats.salesByUserAndDate
-                      .filter((d: any) => d.category === activeTab)
-                      .map((userData: any, index: number) => (
-                        <Line
-                          key={userData.userName}
-                          type="monotone"
-                          dataKey={userData.userName}
-                          stroke={USER_COLORS[index % USER_COLORS.length]}
-                          strokeWidth={2}
-                          dot={{ r: 4 }}
-                          activeDot={{ r: 6 }}
-                        />
-                      ))}
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <Card className={`${theme.card} backdrop-blur-xl border ${theme.cardBorder}`}>
-              <CardHeader>
-                <CardTitle className={theme.text.primary}>Distribution</CardTitle>
-              </CardHeader>
-              <CardContent className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#fff' }}
-                      itemStyle={{ color: '#fff' }}
-                    />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <SalesTrendChart salesByUserAndDate={stats.salesByUserAndDate} theme={theme} />
+          <SalesDistributionChart stats={stats} users={users} theme={theme} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-          {/* Users List */}
-          <motion.div
-            className="lg:col-span-2"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <Card className={`${theme.card} backdrop-blur-xl border ${theme.cardBorder} h-full`}>
-              <CardHeader>
-                <CardTitle className={`${theme.text.primary} flex items-center gap-2`}>
-                  <Users className="h-5 w-5" /> Users ({users.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                  {users.map((user) => (
-                    <div key={user.id} className={`flex items-center justify-between p-4 rounded-xl ${theme.cardInactive} border ${theme.cardInactiveBorder} hover:${theme.glass} transition-colors`}>
-                      <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-lg font-bold text-white">
-                          {user.name.charAt(0)}
-                        </div>
-                        <div>
-                          <div className={`font-medium ${theme.text.primary}`}>{user.name}</div>
-                          <div className={`text-sm ${theme.text.muted}`}>{user.email}</div>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteUser(user.id)}
-                        disabled={deletingUserId === user.id}
-                        className="text-red-400 hover:text-red-300 hover:bg-red-950/30"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  {users.length === 0 && (
-                    <div className={`text-center ${theme.text.muted} py-8`}>No users found</div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Danger Zone */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.7 }}
-          >
-            <Card className={`${theme.card} backdrop-blur-xl border-red-500/30 h-full`}>
-              <CardHeader>
-                <CardTitle className="text-red-500 flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5" /> Danger Zone
-                </CardTitle>
-                <CardDescription className={theme.text.muted}>
-                  Irreversible actions. Proceed with caution.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className={`p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-sm ${theme.text.secondary}`}>
-                  Deleting all sales will reset the leaderboard and all user progress. This action cannot be undone.
-                </div>
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteAllSales}
-                  disabled={isDeletingSales}
-                  className="w-full"
-                >
-                  {isDeletingSales ? 'Deleting...' : 'Delete All Sales Database'}
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <UsersList users={users} theme={theme} />
+          <DangerZone theme={theme} />
         </div>
       </div>
     </div>
