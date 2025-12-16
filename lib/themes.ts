@@ -241,3 +241,10 @@ export const themes: Record<string, GlobalTheme> = {
     }
   }
 }
+
+/**
+ * Get theme by ID with fallback to default theme
+ */
+export function getTheme(themeId: string): GlobalTheme {
+  return themes[themeId] || themes['default']!
+}

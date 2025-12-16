@@ -6,7 +6,7 @@ import { LogOut, Trophy, ArrowLeft, Palette, Check, Download } from 'lucide-reac
 import * as Icons from 'lucide-react'
 import Link from 'next/link'
 import { signOut } from '@/app/login/actions'
-import { themes } from '@/lib/themes'
+import { themes, getTheme } from '@/lib/themes'
 import { exportToCSV, formatLeaderboardForExport } from '@/lib/export'
 import { rateLimiter, RATE_LIMITS } from '@/lib/rate-limiter'
 import { toast } from 'sonner'
@@ -25,7 +25,7 @@ type ListViewProps = {
 export function ListView({ user, leaderboard }: ListViewProps) {
   const [currentThemeId, setCurrentThemeId] = useState('default')
   
-  const theme = themes[currentThemeId].variants.Internet // List view doesn't need category switching
+  const theme = getTheme(currentThemeId).variants.Internet
 
   const handleExportLeaderboard = () => {
     if (!rateLimiter.check('export', RATE_LIMITS.EXPORT)) {

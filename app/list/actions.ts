@@ -62,11 +62,12 @@ export async function getLeaderboard() {
     // Find current tier
     // Tiers are sorted by contracts_required ascending
     // We want the highest tier where contracts_required <= totalSales
-    let currentTier = tiers[0] // Default to first tier (Starter)
+    let currentTier = tiers[0] || null // Default to first tier (Starter)
 
     for (let i = tiers.length - 1; i >= 0; i--) {
-      if (totalSales >= tiers[i].contracts_required) {
-        currentTier = tiers[i]
+      const tier = tiers[i]
+      if (tier && totalSales >= tier.contracts_required) {
+        currentTier = tier
         break
       }
     }

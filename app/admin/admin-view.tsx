@@ -11,7 +11,7 @@ import { signOut } from '@/app/login/actions'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { themes } from '@/lib/themes'
+import { themes, getTheme } from '@/lib/themes'
 import { rateLimiter, RATE_LIMITS } from '@/lib/rate-limiter'
 import {
   DropdownMenu,
@@ -38,7 +38,7 @@ export function AdminView({ stats, users }: AdminViewProps) {
   const [currentThemeId, setCurrentThemeId] = useState('default')
   const router = useRouter()
   
-  const theme = themes[currentThemeId].variants.Internet // Admin view doesn't need category switching
+  const theme = getTheme(currentThemeId).variants.Internet
 
   const handleDeleteAllSales = async () => {
     if (!confirm('Are you sure you want to DELETE ALL SALES? This cannot be undone.')) return

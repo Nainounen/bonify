@@ -6,13 +6,13 @@ import { Plus, Wifi, Smartphone } from 'lucide-react'
 import { logSale } from '@/app/dashboard/actions'
 import { toast } from 'sonner'
 import confetti from 'canvas-confetti'
-import { GlobalTheme, themes } from '@/lib/themes'
+import { GlobalTheme, themes, getTheme } from '@/lib/themes'
 import { rateLimiter, RATE_LIMITS } from '@/lib/rate-limiter'
 
 export function CounterButton({
   category: controlledCategory,
   onCategoryChange,
-  theme = themes.default
+  theme
 }: {
   category?: 'Internet' | 'Mobile',
   onCategoryChange?: (category: 'Internet' | 'Mobile') => void,
@@ -25,7 +25,8 @@ export function CounterButton({
 
   const category = controlledCategory ?? internalCategory
   const setCategory = onCategoryChange ?? setInternalCategory
-  const currentVariant = theme.variants[category]
+  const safeTheme = theme || getTheme('default')
+  const currentVariant = safeTheme.variants[category]
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     // Check rate limit
@@ -121,10 +122,10 @@ export function CounterButton({
         <button
           onClick={() => setCategory('Internet')}
           className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-all ${category === 'Internet'
-            ? `${theme.variants.Internet.accent} text-white shadow-lg`
+            ? `${safeTheme.variants.Internet.accent} text-white shadow-lg`
             : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
-          style={category === 'Internet' ? { boxShadow: `0 10px 15px -3px rgba(${theme.variants.Internet.glowColor}, 0.25)` } : undefined}
+          style={category === 'Internet' ? { boxShadow: `0 10px 15px -3px rgba(${safeTheme.variants.Internet.glowColor}, 0.25)` } : undefined}
         >
           <Wifi className="h-4 w-4" />
           Internet
@@ -132,10 +133,10 @@ export function CounterButton({
         <button
           onClick={() => setCategory('Mobile')}
           className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-medium transition-all ${category === 'Mobile'
-            ? `${theme.variants.Mobile.accent} text-white shadow-lg`
+            ? `${safeTheme.variants.Mobile.accent} text-white shadow-lg`
             : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
-          style={category === 'Mobile' ? { boxShadow: `0 10px 15px -3px rgba(${theme.variants.Mobile.glowColor}, 0.25)` } : undefined}
+          style={category === 'Mobile' ? { boxShadow: `0 10px 15px -3px rgba(${safeTheme.variants.Mobile.glowColor}, 0.25)` } : undefined}
         >
           <Smartphone className="h-4 w-4" />
           Mobile

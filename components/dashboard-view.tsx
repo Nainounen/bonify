@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import * as Icons from 'lucide-react'
 import { Zap, LogOut, Undo2, Palette } from 'lucide-react'
-import { themes } from '@/lib/themes'
+import { themes, getTheme } from '@/lib/themes'
 import { signOut } from '@/app/login/actions'
 import { undoLastSale } from '@/app/dashboard/undo-actions'
 import { toast } from 'sonner'
@@ -26,7 +26,7 @@ export function DashboardView({ stats }: DashboardViewProps) {
   const [currentThemeId, setCurrentThemeId] = useState('default')
   const [isPending, startTransition] = useTransition()
 
-  const globalTheme = themes[currentThemeId]
+  const globalTheme = getTheme(currentThemeId)
   const theme = globalTheme.variants[category]
 
   const handleUndo = () => {

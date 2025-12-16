@@ -24,7 +24,7 @@ export async function logSale(category: 'Internet' | 'Mobile') {
   }
 
   // Count sales for the specific category
-  const categorySales = sales?.filter(s => s.category === category) || []
+  const categorySales = (sales as Array<{ id: number; category: string }>)?.filter(s => s.category === category) || []
   const newCategoryCount = categorySales.length + 1
 
   // Get appropriate tier based on new category count
