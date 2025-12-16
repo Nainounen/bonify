@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Logo } from '@/components/logo'
-import { themes } from '@/lib/themes'
+import { themes, type GlobalTheme } from '@/lib/themes'
 
 export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -32,7 +32,7 @@ export default function LoginPage() {
     }
   }
 
-  const currentTheme = themes[theme as keyof typeof themes] || themes.default
+  const currentTheme = (themes[theme as keyof typeof themes] || themes.default) as GlobalTheme
   const background = currentTheme.variants.Internet.background
 
   return (
