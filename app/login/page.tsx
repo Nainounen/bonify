@@ -32,7 +32,7 @@ export default function LoginPage() {
     }
   }
 
-  const currentTheme = themes[theme]
+  const currentTheme = themes[theme] || themes.default
   const background = currentTheme.variants.Internet.background
 
   return (
