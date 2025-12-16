@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import { LogOut, TrendingUp, DollarSign, Target, Zap } from 'lucide-react'
 import * as Icons from 'lucide-react'
+import type { Database } from '@/lib/supabase/types'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -17,11 +18,14 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  const stats = await getEmployeeStats()
+  const statsResult = await getEmployeeStats()
 
-  if (stats.error || !stats.employee) {
+  if ('error' in statsResult || !statsResult.employee) {
     return <div>Error loading stats</div>
   }
+
+  // Type assertion after error check
+  const stats = statsResult as any
 
   const progressToNext = stats.nextTier
     ? ((stats.totalSales - (stats.currentTier?.contracts_required || 0)) /
@@ -35,7 +39,7 @@ export default async function DashboardPage() {
       <div className="sticky top-0 z-50 backdrop-blur-xl bg-black/20 border-b border-white/10">
         <div className="container mx-auto max-w-2xl px-4 py-3 flex items-center justify-between">
           <div>
-            <p className="text-white/90 text-sm font-medium">{stats.employee.name}</p>
+            <p className="text-white/90 text-sm font-medium">{stats.employee!.name}</p>
             <p className="text-white/50 text-xs">{stats.currentTier?.name || 'Starter'} Tier</p>
           </div>
           <form action={signOut}>
@@ -110,7 +114,7 @@ export default async function DashboardPage() {
         <div className="mb-8">
           <h3 className="text-white/90 font-semibold text-lg mb-6 text-center">Bonus Journey</h3>
           <div className="space-y-3">
-            {stats.tiers.map((tier, index) => {
+            {stats.tiers.map((tier: any, index: number) => {
               const isUnlocked = stats.totalSales >= tier.contracts_required
               const isCurrent = stats.currentTier?.id === tier.id
               const IconComponent = (Icons as any)[tier.icon] || Icons.Star
