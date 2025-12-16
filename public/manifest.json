@@ -4,8 +4,8 @@
   "description": "Track your sales contracts and earn bonuses",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1e293b",
-  "theme_color": "#1e293b",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "orientation": "portrait",
   "scope": "/",
   "icons": [
