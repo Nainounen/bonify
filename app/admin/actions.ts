@@ -92,7 +92,7 @@ export async function getUsers() {
 
   const { data: users, error } = await supabase
     .from('employees')
-    .select('*')
+    .select('*, sales(id, category, created_at)')
     .order('name')
 
   if (error) {
