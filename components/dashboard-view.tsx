@@ -128,7 +128,7 @@ export function DashboardView({ stats }: DashboardViewProps) {
                     className="cursor-pointer hover:bg-white/10 focus:bg-white/10"
                   >
                     <div className="flex items-center gap-2 w-full">
-                      <div className={`w-4 h-4 rounded-full bg-gradient-to-br ${t.variants.Internet.accent.replace('bg-', 'from-').replace('text-', 'from-')} to-slate-900`} />
+                      <div className={`w-4 h-4 rounded-full bg-gradient-to-br ${t.icon}`} />
                       <span className={currentThemeId === t.id ? 'font-bold text-white' : 'text-white/70'}>
                         {t.name}
                       </span>
