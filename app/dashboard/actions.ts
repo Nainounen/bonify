@@ -2,9 +2,9 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import type { Database } from '@/lib/supabase/types'
+import { getCurrentPeriod } from '@/lib/bonus-calculator'
 
-export async function logSale(category: 'Internet' | 'Mobile') {
+export async function logSale(category: 'Wireless' | 'Wireline') {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -13,45 +13,42 @@ export async function logSale(category: 'Internet' | 'Mobile') {
     return { error: 'Not authenticated' }
   }
 
-  // Get current sales count for this category to determine tier
-  const { data: sales, error: salesError } = await supabase
-    .from('sales')
-    .select('id, category')
-    .eq('employee_id', user.id)
-
-  if (salesError) {
-    return { error: salesError.message }
-  }
-
-  // Count sales for the specific category
-  const categorySales = (sales as Array<{ id: number; category: string }>)?.filter(s => s.category === category) || []
-  const newCategoryCount = categorySales.length + 1
-
-  // Get appropriate tier based on new category count
-  const { data: tiers } = await supabase
-    .from('bonus_tiers')
-    .select('*')
-    .lte('contracts_required', newCategoryCount)
-    .order('contracts_required', { ascending: false })
-    .limit(1)
-
-  const currentTier = tiers?.[0] as Database['public']['Tables']['bonus_tiers']['Row'] | undefined
+  // Get current period
+  const { year, month } = getCurrentPeriod()
 
   // Insert new sale
   const { error: insertError } = await supabase
     .from('sales')
     .insert({
       employee_id: user.id,
-      bonus_tier_id: currentTier?.id ?? null,
-      category: category
+      category: category,
+      year,
+      month,
     } as any)
 
   if (insertError) {
     return { error: insertError.message }
   }
 
+  // Get updated counts for current month
+  const { data: sales } = await supabase
+    .from('sales')
+    .select('category')
+    .eq('employee_id', user.id)
+    .eq('year', year)
+    .eq('month', month)
+
+  const wirelessCount = sales?.filter(s => s.category === 'Wireless').length || 0
+  const wirelineCount = sales?.filter(s => s.category === 'Wireline').length || 0
+
   revalidatePath('/dashboard')
-  return { success: true, newCount: newCategoryCount, tier: currentTier }
+  return { 
+    success: true, 
+    wirelessCount,
+    wirelineCount,
+    year,
+    month
+  }
 }
 
 export async function getEmployeeStats() {
@@ -66,7 +63,7 @@ export async function getEmployeeStats() {
   // Get employee info (create if doesn't exist)
   let { data: employee } = await supabase
     .from('employees')
-    .select('*')
+    .select('*, shops(name)')
     .eq('id', user.id)
     .single()
 
@@ -78,8 +75,10 @@ export async function getEmployeeStats() {
         id: user.id,
         email: user.email!,
         name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+        role: 'internal_sales',
+        employment_percentage: 100,
       } as any)
-      .select()
+      .select('*, shops(name)')
       .single()
 
     if (createError) {
@@ -89,46 +88,125 @@ export async function getEmployeeStats() {
     employee = newEmployee
   }
 
-  // Get all sales
+  // Get current period
+  const { year, month } = getCurrentPeriod()
+
+  // Get current month's sales
   const { data: sales } = await supabase
     .from('sales')
-    .select('*, bonus_tiers(*)')
+    .select('*')
     .eq('employee_id', user.id)
+    .eq('year', year)
+    .eq('month', month)
     .order('created_at', { ascending: false })
 
-  type SaleWithTier = Database['public']['Tables']['sales']['Row'] & {
-    bonus_tiers: Database['public']['Tables']['bonus_tiers']['Row'] | null
-  }
-
-  // Get all tiers
-  const { data: tiers } = await supabase
-    .from('bonus_tiers')
+  // Get current month's target
+  const { data: target } = await supabase
+    .from('monthly_targets')
     .select('*')
-    .order('order', { ascending: true })
+    .eq('employee_id', user.id)
+    .eq('year', year)
+    .eq('month', month)
+    .single()
 
-  const totalSales = sales?.length || 0
+  // Count sales by category
+  const wirelessCount = sales?.filter(s => s.category === 'Wireless').length || 0
+  const wirelineCount = sales?.filter(s => s.category === 'Wireline').length || 0
 
-  type BonusTier = Database['public']['Tables']['bonus_tiers']['Row']
+  const wirelessTarget = target?.wireless_target || 0
+  const wirelineTarget = target?.wireline_target || 0
 
-  // Calculate current tier
-  const currentTier = (tiers as BonusTier[] | null)?.filter(t => t.contracts_required <= totalSales)
-    .sort((a, b) => b.contracts_required - a.contracts_required)[0]
+  // Calculate ZER and projected bonus (only for sales roles)
+  let projectedBonus = 0
+  let wirelessZER = 0
+  let wirelineZER = 0
 
-  // Calculate next tier
-  const nextTier = (tiers as BonusTier[] | null)?.find(t => t.contracts_required > totalSales)
+  if (employee.role !== 'shop_manager') {
+    const { calculateEmployeeBonus } = await import('@/lib/bonus-calculator')
+    const bonusCalc = calculateEmployeeBonus({
+      role: employee.role as any,
+      wirelessCount,
+      wirelineCount,
+      wirelessTarget,
+      wirelineTarget,
+      employmentPercentage: employee.employment_percentage || 100,
+    })
+    
+    projectedBonus = bonusCalc.cappedBonus
+    wirelessZER = bonusCalc.wirelessZER
+    wirelineZER = bonusCalc.wirelineZER
+  } else {
+    // For managers, calculate based on shop gZER
+    // Get all employees in the same shop
+    if (employee.shop_id) {
+      const { data: shopEmployees } = await supabase
+        .from('employees')
+        .select('id, role, employment_percentage')
+        .eq('shop_id', employee.shop_id)
+        .neq('role', 'shop_manager')
 
-  // Calculate total bonus earned
-  const totalBonus = (sales as SaleWithTier[] | null)?.reduce((sum, sale) => {
-    return sum + (sale.bonus_tiers?.bonus_amount || 0)
-  }, 0) || 0
+      if (shopEmployees && shopEmployees.length > 0) {
+        const { calculateShopGZER, calculateShopManagerBonus } = await import('@/lib/bonus-calculator')
+        
+        // Get ZERs for all shop employees
+        const employeeZERs = await Promise.all(
+          shopEmployees.map(async (emp) => {
+            const { data: empSales } = await supabase
+              .from('sales')
+              .select('category')
+              .eq('employee_id', emp.id)
+              .eq('year', year)
+              .eq('month', month)
+
+            const { data: empTarget } = await supabase
+              .from('monthly_targets')
+              .select('*')
+              .eq('employee_id', emp.id)
+              .eq('year', year)
+              .eq('month', month)
+              .single()
+
+            const empWirelessCount = empSales?.filter(s => s.category === 'Wireless').length || 0
+            const empWirelineCount = empSales?.filter(s => s.category === 'Wireline').length || 0
+
+            const { calculateEmployeeBonus } = await import('@/lib/bonus-calculator')
+            const empBonus = calculateEmployeeBonus({
+              role: emp.role as any,
+              wirelessCount: empWirelessCount,
+              wirelineCount: empWirelineCount,
+              wirelessTarget: empTarget?.wireless_target || 0,
+              wirelineTarget: empTarget?.wireline_target || 0,
+              employmentPercentage: emp.employment_percentage || 100,
+            })
+
+            return {
+              wirelessZER: empBonus.wirelessZER,
+              wirelineZER: empBonus.wirelineZER,
+            }
+          })
+        )
+
+        const shopGZER = calculateShopGZER(employeeZERs)
+        const managerBonus = calculateShopManagerBonus(shopGZER)
+        projectedBonus = managerBonus.bonusAmount
+        wirelessZER = shopGZER
+        wirelineZER = shopGZER
+      }
+    }
+  }
 
   return {
     employee,
     sales: sales || [],
-    tiers: tiers || [],
-    totalSales,
-    currentTier,
-    nextTier,
-    totalBonus,
+    wirelessCount,
+    wirelineCount,
+    wirelessTarget,
+    wirelineTarget,
+    wirelessZER,
+    wirelineZER,
+    projectedBonus,
+    year,
+    month,
+    hasTarget: !!target,
   }
 }

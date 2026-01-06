@@ -29,6 +29,8 @@ export type GlobalTheme = {
   variants: {
     Internet: CategoryColors
     Mobile: CategoryColors
+    Wireline: CategoryColors
+    Wireless: CategoryColors
   }
 }
 
@@ -83,7 +85,9 @@ export const themes: Record<string, GlobalTheme> = {
         cardInactiveBorder: 'border-white/10',
         divider: 'bg-white/20',
         iconMuted: 'text-white/30'
-      }
+      },
+      get Wireline() { return this.Internet },
+      get Wireless() { return this.Mobile }
     }
   },
   forest: {
@@ -136,7 +140,9 @@ export const themes: Record<string, GlobalTheme> = {
         cardInactiveBorder: 'border-white/10',
         divider: 'bg-white/20',
         iconMuted: 'text-white/30'
-      }
+      },
+      get Wireline() { return this.Internet },
+      get Wireless() { return this.Mobile }
     }
   },
   midnight: {
@@ -189,7 +195,9 @@ export const themes: Record<string, GlobalTheme> = {
         cardInactiveBorder: 'border-white/10',
         divider: 'bg-white/20',
         iconMuted: 'text-white/30'
-      }
+      },
+      get Wireline() { return this.Internet },
+      get Wireless() { return this.Mobile }
     }
   },
   swisscom: {
@@ -242,7 +250,9 @@ export const themes: Record<string, GlobalTheme> = {
         cardInactiveBorder: 'border-[#DDE3E7]',
         divider: 'bg-[#DDE3E7]',
         iconMuted: 'text-[#001155]/45'
-      }
+      },
+      get Wireline() { return this.Internet },
+      get Wireless() { return this.Mobile }
     }
   }
 }

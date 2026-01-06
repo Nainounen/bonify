@@ -1,16 +1,19 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import type { Database } from '@/lib/supabase/types'
+import { getCurrentPeriod, calculateEmployeeBonus } from '@/lib/bonus-calculator'
 
 export type LeaderboardEntry = {
   id: string
   name: string
   email: string
+  role: string
   totalSales: number
-  internetSales: number
-  mobileSales: number
-  currentTier: Database['public']['Tables']['bonus_tiers']['Row'] | null
+  wirelessSales: number
+  wirelineSales: number
+  wirelessZER: number
+  wirelineZER: number
+  projectedBonus: number
 }
 
 export async function getLeaderboard() {
@@ -22,16 +25,12 @@ export async function getLeaderboard() {
     return { error: 'Not authenticated' }
   }
 
-  // Fetch all employees with their sales, excluding admin and list users
+  const { year, month } = getCurrentPeriod()
+
+  // Fetch all employees with their current month sales, excluding admin and list users
   const { data: employees, error: employeesError } = await supabase
     .from('employees')
-    .select(`
-      *,
-      sales (
-        id,
-        category
-      )
-    `)
+    .select('*')
     .neq('email', 'list@admin.com')
     .neq('email', 'admin@admin.com')
 
@@ -39,53 +38,75 @@ export async function getLeaderboard() {
     return { error: employeesError.message }
   }
 
-  // Fetch all tiers
-  const { data: tiers } = await supabase
-    .from('bonus_tiers')
-    .select('*')
-    .order('contracts_required', { ascending: true })
-    .returns<Database['public']['Tables']['bonus_tiers']['Row'][]>()
-
-  if (!tiers) {
-    return { error: 'Failed to load tiers' }
-  }
-
   if (!employees) {
     return { error: 'No employees found' }
   }
 
   // Process data to calculate stats for each employee
-  const leaderboard: LeaderboardEntry[] = employees.map((emp: any) => {
-    const totalSales = emp.sales?.length || 0
-    const internetSales = emp.sales?.filter((s: any) => s.category === 'Internet').length || 0
-    const mobileSales = emp.sales?.filter((s: any) => s.category === 'Mobile').length || 0
+  const leaderboard: LeaderboardEntry[] = await Promise.all(
+    employees.map(async (emp: any) => {
+      // Get employee's sales for current month
+      const { data: sales } = await supabase
+        .from('sales')
+        .select('category')
+        .eq('employee_id', emp.id)
+        .eq('year', year)
+        .eq('month', month)
 
-    // Find current tier
-    // Tiers are sorted by contracts_required ascending
-    // We want the highest tier where contracts_required <= totalSales
-    let currentTier = tiers[0] || null // Default to first tier (Starter)
+      const wirelessSales = sales?.filter((s: any) => s.category === 'Wireless').length || 0
+      const wirelineSales = sales?.filter((s: any) => s.category === 'Wireline').length || 0
+      const totalSales = wirelessSales + wirelineSales
 
-    for (let i = tiers.length - 1; i >= 0; i--) {
-      const tier = tiers[i]
-      if (tier && totalSales >= tier.contracts_required) {
-        currentTier = tier
-        break
+      // Get employee's target for current month
+      const { data: target } = await supabase
+        .from('monthly_targets')
+        .select('*')
+        .eq('employee_id', emp.id)
+        .eq('year', year)
+        .eq('month', month)
+        .single()
+
+      let wirelessZER = 0
+      let wirelineZER = 0
+      let projectedBonus = 0
+
+      if (target && emp.role !== 'shop_manager') {
+        const bonusCalc = calculateEmployeeBonus({
+          role: emp.role,
+          wirelessCount: wirelessSales,
+          wirelineCount: wirelineSales,
+          wirelessTarget: target.wireless_target || 0,
+          wirelineTarget: target.wireline_target || 0,
+          employmentPercentage: emp.employment_percentage || 100,
+        })
+
+        wirelessZER = bonusCalc.wirelessZER
+        wirelineZER = bonusCalc.wirelineZER
+        projectedBonus = bonusCalc.cappedBonus
       }
-    }
 
-    return {
-      id: emp.id,
-      name: emp.name,
-      email: emp.email,
-      totalSales,
-      internetSales,
-      mobileSales,
-      currentTier
+      return {
+        id: emp.id,
+        name: emp.name,
+        email: emp.email,
+        role: emp.role || 'internal_sales',
+        totalSales,
+        wirelessSales,
+        wirelineSales,
+        wirelessZER,
+        wirelineZER,
+        projectedBonus,
+      }
+    })
+  )
+
+  // Sort by projected bonus (descending), then total sales
+  leaderboard.sort((a, b) => {
+    if (b.projectedBonus !== a.projectedBonus) {
+      return b.projectedBonus - a.projectedBonus
     }
+    return b.totalSales - a.totalSales
   })
-
-  // Sort by sales (descending)
-  leaderboard.sort((a, b) => b.totalSales - a.totalSales)
 
   return { leaderboard }
 }

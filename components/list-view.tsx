@@ -130,7 +130,6 @@ export function ListView({ user, leaderboard }: ListViewProps) {
         <div className="space-y-3 sm:space-y-4">
           {leaderboard.map((employee, index) => {
             const isCurrentUser = employee.id === user.id
-            const IconComponent = employee.currentTier ? (Icons as any)[employee.currentTier.icon] : Icons.Star
 
             return (
               <div
@@ -160,23 +159,24 @@ export function ListView({ user, leaderboard }: ListViewProps) {
                       )}
                     </div>
                     <div className={`flex items-center gap-1.5 sm:gap-2 text-xs ${theme.text.muted}`}>
-                      {employee.currentTier && (
-                        <div className="flex items-center gap-1" style={{ color: employee.currentTier.color }}>
-                          <IconComponent className="h-3 w-3" />
-                          <span className="text-xs sm:text-sm">{employee.currentTier.name}</span>
-                        </div>
+                      <span>{employee.role === 'shop_manager' ? 'Shop Manager' : employee.role === 'internal_sales' ? 'Internal' : 'External'}</span>
+                      {employee.projectedBonus > 0 && (
+                        <>
+                          <span>•</span>
+                          <span className="text-emerald-400 font-semibold">CHF {employee.projectedBonus.toFixed(0)}</span>
+                        </>
                       )}
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 sm:gap-4 text-right flex-shrink-0">
                     <div className="hidden md:block">
-                      <div className={`text-sm font-medium ${theme.primary}`}>{employee.internetSales}</div>
-                      <div className={`text-[10px] ${theme.iconMuted} uppercase`}>Net</div>
+                      <div className={`text-sm font-medium ${theme.primary}`}>{employee.wirelineSales}</div>
+                      <div className={`text-[10px] ${theme.iconMuted} uppercase`}>W+</div>
                     </div>
                     <div className="hidden md:block">
-                      <div className={`text-sm font-medium ${theme.secondary}`}>{employee.mobileSales}</div>
-                      <div className={`text-[10px] ${theme.iconMuted} uppercase`}>Mob</div>
+                      <div className={`text-sm font-medium ${theme.secondary}`}>{employee.wirelessSales}</div>
+                      <div className={`text-[10px] ${theme.iconMuted} uppercase`}>W-</div>
                     </div>
                     <div>
                       <div className={`text-lg sm:text-xl font-bold ${theme.text.primary}`}>{employee.totalSales}</div>

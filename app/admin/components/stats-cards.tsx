@@ -7,8 +7,9 @@ import { Wifi, Smartphone } from 'lucide-react'
 type StatsCardsProps = {
   stats: {
     total: number
-    internet: number
-    mobile: number
+    wireless: number
+    wireline: number
+    avgZER: number
   }
   theme: any
 }
@@ -41,11 +42,11 @@ export function StatsCards({ stats, theme }: StatsCardsProps) {
         <Card className={`${theme.card} backdrop-blur-xl border ${theme.cardBorder} h-full`}>
           <CardHeader className="pb-2">
             <CardTitle className={`text-sm font-medium ${theme.primary} flex items-center gap-2`}>
-              <Wifi className="h-4 w-4" /> Internet
+              <Wifi className="h-4 w-4" /> Wireline
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-5xl font-bold ${theme.primary}`}>{stats.internet}</div>
+            <div className={`text-5xl font-bold ${theme.primary}`}>{stats.wireline}</div>
           </CardContent>
         </Card>
       </motion.div>
@@ -58,11 +59,11 @@ export function StatsCards({ stats, theme }: StatsCardsProps) {
         <Card className={`${theme.card} backdrop-blur-xl border ${theme.cardBorder} h-full`}>
           <CardHeader className="pb-2">
             <CardTitle className={`text-sm font-medium ${theme.secondary} flex items-center gap-2`}>
-              <Smartphone className="h-4 w-4" /> Mobile
+              <Smartphone className="h-4 w-4" /> Wireless
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-5xl font-bold ${theme.secondary}`}>{stats.mobile}</div>
+            <div className={`text-5xl font-bold ${theme.secondary}`}>{stats.wireless}</div>
           </CardContent>
         </Card>
       </motion.div>

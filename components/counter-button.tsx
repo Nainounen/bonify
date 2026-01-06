@@ -14,14 +14,14 @@ export function CounterButton({
   onCategoryChange,
   theme
 }: {
-  category?: 'Internet' | 'Mobile',
-  onCategoryChange?: (category: 'Internet' | 'Mobile') => void,
+  category?: 'Wireline' | 'Wireless',
+  onCategoryChange?: (category: 'Wireline' | 'Wireless') => void,
   theme?: GlobalTheme
 } = {}) {
   const [isPending, startTransition] = useTransition()
   const [isAnimating, setIsAnimating] = useState(false)
   const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([])
-  const [internalCategory, setInternalCategory] = useState<'Internet' | 'Mobile'>('Internet')
+  const [internalCategory, setInternalCategory] = useState<'Wireline' | 'Wireless'>('Wireline')
 
   const category = controlledCategory ?? internalCategory
   const setCategory = onCategoryChange ?? setInternalCategory
@@ -75,46 +75,10 @@ export function CounterButton({
       if (result.error) {
         toast.error(result.error)
       } else {
-        toast.success(`${category} Contract #${result.newCount} logged! 🎉`, {
+        const count = category === 'Wireless' ? result.wirelessCount : result.wirelineCount
+        toast.success(`${category} Contract #${count} logged! 🎉`, {
           description: 'Great work! Keep it up!',
         })
-
-        // Celebrate tier achievements
-        if (result.tier && result.newCount === result.tier.contracts_required) {
-          // Multiple confetti bursts
-          const duration = 3 * 1000
-          const animationEnd = Date.now() + duration
-          const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 }
-
-          function randomInRange(min: number, max: number) {
-            return Math.random() * (max - min) + min
-          }
-
-          const interval: any = setInterval(function () {
-            const timeLeft = animationEnd - Date.now()
-
-            if (timeLeft <= 0) {
-              return clearInterval(interval)
-            }
-
-            const particleCount = 50 * (timeLeft / duration)
-            confetti({
-              ...defaults,
-              particleCount,
-              origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
-            })
-            confetti({
-              ...defaults,
-              particleCount,
-              origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
-            })
-          }, 250)
-
-          toast.success(`🏆 ${result.tier.name} Tier Unlocked!`, {
-            description: `Bonus: CHF ${result.tier.bonus_amount}`,
-            duration: 6000,
-          })
-        }
       }
 
       setTimeout(() => setIsAnimating(false), 300)
@@ -125,28 +89,28 @@ export function CounterButton({
     <div className="flex flex-col items-center gap-6 sm:gap-8">
       <div className="flex items-center p-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-sm touch-manipulation">
         <button
-          onClick={() => setCategory('Internet')}
-          className={`flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all touch-manipulation ${category === 'Internet'
+          onClick={() => setCategory('Wireline')}
+          className={`flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all touch-manipulation ${category === 'Wireline'
             ? `${safeTheme.variants.Internet.accent} text-white shadow-lg`
             : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
-          style={category === 'Internet' ? { boxShadow: `0 10px 15px -3px rgba(${safeTheme.variants.Internet.glowColor}, 0.25)` } : undefined}
+          style={category === 'Wireline' ? { boxShadow: `0 10px 15px -3px rgba(${safeTheme.variants.Internet.glowColor}, 0.25)` } : undefined}
         >
           <Wifi className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          <span className="hidden xs:inline">Internet</span>
-          <span className="xs:hidden">Net</span>
+          <span className="hidden xs:inline">Wireline</span>
+          <span className="xs:hidden">W+</span>
         </button>
         <button
-          onClick={() => setCategory('Mobile')}
-          className={`flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all touch-manipulation ${category === 'Mobile'
+          onClick={() => setCategory('Wireless')}
+          className={`flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all touch-manipulation ${category === 'Wireless'
             ? `${safeTheme.variants.Mobile.accent} text-white shadow-lg`
             : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
-          style={category === 'Mobile' ? { boxShadow: `0 10px 15px -3px rgba(${safeTheme.variants.Mobile.glowColor}, 0.25)` } : undefined}
+          style={category === 'Wireless' ? { boxShadow: `0 10px 15px -3px rgba(${safeTheme.variants.Mobile.glowColor}, 0.25)` } : undefined}
         >
           <Smartphone className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          <span className="hidden xs:inline">Mobile</span>
-          <span className="xs:hidden">Mob</span>
+          <span className="hidden xs:inline">Wireless</span>
+          <span className="xs:hidden">W-</span>
         </button>
       </div>
 

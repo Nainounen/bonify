@@ -5,12 +5,13 @@ import { CounterButton } from '@/components/counter-button'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import * as Icons from 'lucide-react'
-import { Zap, LogOut, Undo2, Palette, Trophy, Shield } from 'lucide-react'
+import { Zap, LogOut, Undo2, Palette, Trophy, Shield, TrendingUp, Target, Coins } from 'lucide-react'
 import { themes, getTheme } from '@/lib/themes'
 import { signOut } from '@/app/login/actions'
 import { undoLastSale } from '@/app/dashboard/undo-actions'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { formatZER, formatCurrency, getZERColor } from '@/lib/bonus-calculator'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +24,7 @@ type DashboardViewProps = {
 }
 
 export function DashboardView({ stats }: DashboardViewProps) {
-  const [category, setCategory] = useState<'Internet' | 'Mobile'>('Internet')
+  const [category, setCategory] = useState<'Wireline' | 'Wireless'>('Wireline')
   const [currentThemeId, setCurrentThemeId] = useState('default')
   const [isPending, startTransition] = useTransition()
 
@@ -55,25 +56,20 @@ export function DashboardView({ stats }: DashboardViewProps) {
     })
   }
 
-  // Filter sales based on category
-  const filteredSales = stats.sales.filter((s: any) => s.category === category)
-  const filteredTotalSales = filteredSales.length
+  // Get ZER colors
+  const wirelessZERColor = getZERColor(stats.wirelessZER)
+  const wirelineZERColor = getZERColor(stats.wirelineZER)
+  const currentZER = category === 'Wireless' ? stats.wirelessZER : stats.wirelineZER
+  const currentZERColor = category === 'Wireless' ? wirelessZERColor : wirelineZERColor
 
-  // Calculate tier based on filtered sales
-  const currentTier = stats.tiers
-    .filter((t: any) => t.contracts_required <= filteredTotalSales)
-    .sort((a: any, b: any) => b.contracts_required - a.contracts_required)[0]
+  // Color map
+  const colorMap = {
+    red: { text: 'text-red-400', bg: 'bg-red-500/20', border: 'border-red-500/30', accent: 'bg-red-500' },
+    yellow: { text: 'text-yellow-400', bg: 'bg-yellow-500/20', border: 'border-yellow-500/30', accent: 'bg-yellow-500' },
+    green: { text: 'text-green-400', bg: 'bg-green-500/20', border: 'border-green-500/30', accent: 'bg-green-500' },
+  }
 
-  const nextTier = stats.tiers.find((t: any) => t.contracts_required > filteredTotalSales)
-
-  const progressToNext = nextTier
-    ? ((filteredTotalSales - (currentTier?.contracts_required || 0)) /
-      (nextTier.contracts_required - (currentTier?.contracts_required || 0))) *
-    100
-    : 100
-
-  const internetSales = stats.sales.filter((s: any) => s.category === 'Internet').length
-  const mobileSales = stats.sales.filter((s: any) => s.category === 'Mobile').length
+  const currentColor = colorMap[currentZERColor]
 
   return (
     <div className={`min-h-screen transition-colors duration-700 ${theme.background}`}>
@@ -82,7 +78,9 @@ export function DashboardView({ stats }: DashboardViewProps) {
         <div className="container mx-auto max-w-7xl px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
           <div className="min-w-0 flex-1 sm:flex-none">
             <p className={`${theme.text.primary} text-sm sm:text-base font-medium truncate`}>{stats.employee!.name}</p>
-            <p className={`${theme.text.secondary} text-xs sm:text-sm`}>{currentTier?.name || 'Starter'} Tier</p>
+            <p className={`${theme.text.secondary} text-xs sm:text-sm`}>
+              {stats.employee.role === 'shop_manager' ? 'Shop Manager' : stats.employee.role === 'internal_sales' ? 'Internal Sales' : 'External Sales'}
+            </p>
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
             <Link href="/list">
@@ -153,45 +151,84 @@ export function DashboardView({ stats }: DashboardViewProps) {
         <div className="mx-auto max-w-2xl lg:max-w-none lg:col-span-8 lg:col-start-2 xl:col-span-8 xl:col-start-2">
         {/* Hero Stats Section */}
         <div className="py-6 sm:py-8 text-center">
+          {/* Current Month Indicator */}
           <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full backdrop-blur-sm mb-4 sm:mb-6 ${theme.glass}`}>
             <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-400" />
-            <span className={`text-xs sm:text-sm font-medium ${theme.text.primary}`}>{stats.totalSales} Total Contracts Sold</span>
+            <span className={`text-xs sm:text-sm font-medium ${theme.text.primary}`}>
+              {new Date(stats.year, stats.month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            </span>
           </div>
 
-          <div className="mb-5 sm:mb-6">
-            <div className={`text-6xl sm:text-7xl md:text-8xl font-bold ${theme.text.primary} mb-2 transition-colors duration-500`}>{filteredTotalSales}</div>
-            <p className={`${theme.text.secondary} text-xs sm:text-sm uppercase tracking-wider transition-colors duration-500`}>{category} Sales</p>
-          </div>
+          {/* ZER Display */}
+          {stats.hasTarget ? (
+            <div className="mb-5 sm:mb-6">
+              <div className={`text-6xl sm:text-7xl md:text-8xl font-bold ${currentColor.text} mb-2 transition-colors duration-500`}>
+                {currentZER.toFixed(1)}%
+              </div>
+              <p className={`${theme.text.secondary} text-xs sm:text-sm uppercase tracking-wider transition-colors duration-500`}>
+                {category} ZER (Target Achievement)
+              </p>
+            </div>
+          ) : (
+            <div className="mb-5 sm:mb-6">
+              <div className={`text-6xl sm:text-7xl md:text-8xl font-bold ${theme.text.primary} mb-2 transition-colors duration-500`}>
+                {category === 'Wireless' ? stats.wirelessCount : stats.wirelineCount}
+              </div>
+              <p className={`${theme.text.secondary} text-xs sm:text-sm uppercase tracking-wider transition-colors duration-500`}>
+                {category} Sales (No Target Set)
+              </p>
+            </div>
+          )}
 
+          {/* Category Cards */}
           <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-xs mx-auto mb-6 sm:mb-8">
-            <div className={`rounded-2xl p-3 border transition-all duration-500 ${category === 'Internet' ? `${theme.card} ${theme.cardBorder}` : `${theme.cardInactive} ${theme.cardInactiveBorder}`
-              }`}>
+            <div className={`rounded-2xl p-3 border transition-all duration-500 ${
+              category === 'Wireline' ? `${theme.card} ${theme.cardBorder}` : `${theme.cardInactive} ${theme.cardInactiveBorder}`
+            }`}>
               <div className={`flex items-center justify-center gap-2 mb-1 ${theme.secondary}`}>
                 <Icons.Wifi className="h-4 w-4" />
-                <span className="text-xs font-medium uppercase">Internet</span>
+                <span className="text-xs font-medium uppercase">Wireline</span>
               </div>
-              <div className={`text-xl font-bold ${theme.text.primary}`}>{internetSales}</div>
+              <div className={`text-xl font-bold ${theme.text.primary}`}>{stats.wirelineCount}</div>
+              {stats.hasTarget && (
+                <div className={`text-xs ${theme.text.muted} mt-1`}>
+                  {stats.wirelineTarget > 0 ? `${formatZER(stats.wirelineZER)}` : 'No target'}
+                </div>
+              )}
             </div>
-            <div className={`rounded-2xl p-3 border transition-all duration-500 ${category === 'Mobile' ? `${theme.card} ${theme.cardBorder}` : `${theme.cardInactive} ${theme.cardInactiveBorder}`
-              }`}>
+            <div className={`rounded-2xl p-3 border transition-all duration-500 ${
+              category === 'Wireless' ? `${theme.card} ${theme.cardBorder}` : `${theme.cardInactive} ${theme.cardInactiveBorder}`
+            }`}>
               <div className={`flex items-center justify-center gap-2 mb-1 ${theme.secondary}`}>
                 <Icons.Smartphone className="h-4 w-4" />
-                <span className="text-xs font-medium uppercase">Mobile</span>
+                <span className="text-xs font-medium uppercase">Wireless</span>
               </div>
-              <div className={`text-xl font-bold ${theme.text.primary}`}>{mobileSales}</div>
+              <div className={`text-xl font-bold ${theme.text.primary}`}>{stats.wirelessCount}</div>
+              {stats.hasTarget && (
+                <div className={`text-xs ${theme.text.muted} mt-1`}>
+                  {stats.wirelessTarget > 0 ? `${formatZER(stats.wirelessZER)}` : 'No target'}
+                </div>
+              )}
             </div>
           </div>
 
+          {/* Bonus and Stats */}
           <div className="flex items-center justify-center gap-4 sm:gap-6 mb-6 sm:mb-8">
             <div className="text-center">
-              <div className="text-xl sm:text-2xl md:text-3xl font-bold text-emerald-400">CHF {stats.totalBonus.toFixed(0)}</div>
-              <p className={`${theme.text.muted} text-[10px] sm:text-xs uppercase tracking-wide mt-1`}>Total Earned</p>
+              <div className="text-xl sm:text-2xl md:text-3xl font-bold text-emerald-400">{formatCurrency(stats.projectedBonus)}</div>
+              <p className={`${theme.text.muted} text-[10px] sm:text-xs uppercase tracking-wide mt-1`}>Projected Bonus</p>
             </div>
-            <div className={`h-10 sm:h-12 w-px ${theme.divider}`}></div>
-            <div className="text-center">
-              <div className={`text-xl sm:text-2xl md:text-3xl font-bold ${theme.primary} transition-colors duration-500`}>{nextTier ? nextTier.contracts_required - filteredTotalSales : 0}</div>
-              <p className={`${theme.text.muted} text-[10px] sm:text-xs uppercase tracking-wide mt-1`}>To Next {category} Tier</p>
-            </div>
+            {stats.hasTarget && (
+              <>
+                <div className={`h-10 sm:h-12 w-px ${theme.divider}`}></div>
+                <div className="text-center">
+                  <div className={`text-xl sm:text-2xl md:text-3xl font-bold ${theme.primary} transition-colors duration-500`}>
+                    {category === 'Wireless' ? stats.wirelessTarget : stats.wirelineTarget}
+                  </div>
+                  <p className={`${theme.text.muted} text-[10px] sm:text-xs uppercase tracking-wide mt-1`}>{category} Target</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -223,92 +260,99 @@ export function DashboardView({ stats }: DashboardViewProps) {
           />
         </div>
 
-        {/* Progress to Next Tier */}
-        {nextTier && (
-          <div className={`mb-8 sm:mb-12 p-4 sm:p-6 rounded-2xl sm:rounded-3xl backdrop-blur-xl border transition-all duration-500 ${theme.card} ${theme.cardBorder}`}>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className={`${theme.text.muted} text-xs uppercase tracking-wide mb-1`}>Next {category} Tier</p>
-                <div className="flex items-center gap-2">
-                  {(() => {
-                    const IconComponent = (Icons as any)[nextTier.icon] || Icons.Star
-                    return <IconComponent className="h-5 w-5" style={{ color: nextTier.color }} />
-                  })()}
-                  <span className={`${theme.text.primary} font-semibold text-lg`}>{nextTier.name}</span>
+        {/* ZER Progress Cards */}
+        {stats.hasTarget && (
+          <div className="space-y-4 mb-8 sm:mb-12">
+            {/* Wireless ZER */}
+            {stats.wirelessTarget > 0 && (
+              <div className={`p-4 sm:p-6 rounded-2xl sm:rounded-3xl backdrop-blur-xl border transition-all duration-500 ${
+                colorMap[wirelessZERColor].bg
+              } ${colorMap[wirelessZERColor].border}`}>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className={`${theme.text.muted} text-xs uppercase tracking-wide mb-1`}>Wireless (W-)</p>
+                    <div className="flex items-center gap-2">
+                      <Icons.Smartphone className={`h-5 w-5 ${colorMap[wirelessZERColor].text}`} />
+                      <span className={`${theme.text.primary} font-semibold text-lg`}>{formatZER(stats.wirelessZER)}</span>
+                      {stats.wirelessZER >= 100 && stats.wirelessZER <= 120 && (
+                        <span className="px-2 py-0.5 text-xs font-medium bg-yellow-500/30 text-yellow-300 rounded-full">Level 1</span>
+                      )}
+                      {stats.wirelessZER > 120 && (
+                        <span className="px-2 py-0.5 text-xs font-medium bg-green-500/30 text-green-300 rounded-full">Level 2</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className={`text-2xl font-bold ${theme.text.primary}`}>{stats.wirelessCount} / {stats.wirelessTarget}</div>
+                    <p className={`${theme.text.muted} text-xs`}>contracts</p>
+                  </div>
+                </div>
+                <Progress value={Math.min((stats.wirelessCount / stats.wirelessTarget) * 100, 100)} className="h-2 mb-2" />
+                <div className="flex items-center justify-between text-sm">
+                  <span className={theme.text.muted}>
+                    {stats.wirelessCount >= stats.wirelessTarget 
+                      ? `+${stats.wirelessCount - stats.wirelessTarget} over target` 
+                      : `${stats.wirelessTarget - stats.wirelessCount} remaining`}
+                  </span>
+                  {stats.wirelessZER < 100 && <span className={colorMap[wirelessZERColor].text}>Below Target</span>}
+                  {stats.wirelessZER >= 100 && stats.wirelessZER <= 120 && <span className={colorMap[wirelessZERColor].text}>Good Performance</span>}
+                  {stats.wirelessZER > 120 && <span className={colorMap[wirelessZERColor].text}>Top Performance!</span>}
                 </div>
               </div>
-              <div className="text-right">
-                <div className={`text-2xl font-bold ${theme.text.primary}`}>{nextTier.contracts_required - filteredTotalSales}</div>
-                <p className={`${theme.text.muted} text-xs`}>remaining</p>
+            )}
+
+            {/* Wireline ZER */}
+            {stats.wirelineTarget > 0 && (
+              <div className={`p-4 sm:p-6 rounded-2xl sm:rounded-3xl backdrop-blur-xl border transition-all duration-500 ${
+                colorMap[wirelineZERColor].bg
+              } ${colorMap[wirelineZERColor].border}`}>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className={`${theme.text.muted} text-xs uppercase tracking-wide mb-1`}>Wireline (W+)</p>
+                    <div className="flex items-center gap-2">
+                      <Icons.Wifi className={`h-5 w-5 ${colorMap[wirelineZERColor].text}`} />
+                      <span className={`${theme.text.primary} font-semibold text-lg`}>{formatZER(stats.wirelineZER)}</span>
+                      {stats.wirelineZER >= 100 && stats.wirelineZER <= 120 && (
+                        <span className="px-2 py-0.5 text-xs font-medium bg-yellow-500/30 text-yellow-300 rounded-full">Level 1</span>
+                      )}
+                      {stats.wirelineZER > 120 && (
+                        <span className="px-2 py-0.5 text-xs font-medium bg-green-500/30 text-green-300 rounded-full">Level 2</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className={`text-2xl font-bold ${theme.text.primary}`}>{stats.wirelineCount} / {stats.wirelineTarget}</div>
+                    <p className={`${theme.text.muted} text-xs`}>contracts</p>
+                  </div>
+                </div>
+                <Progress value={Math.min((stats.wirelineCount / stats.wirelineTarget) * 100, 100)} className="h-2 mb-2" />
+                <div className="flex items-center justify-between text-sm">
+                  <span className={theme.text.muted}>
+                    {stats.wirelineCount >= stats.wirelineTarget 
+                      ? `+${stats.wirelineCount - stats.wirelineTarget} over target` 
+                      : `${stats.wirelineTarget - stats.wirelineCount} remaining`}
+                  </span>
+                  {stats.wirelineZER < 100 && <span className={colorMap[wirelineZERColor].text}>Below Target</span>}
+                  {stats.wirelineZER >= 100 && stats.wirelineZER <= 120 && <span className={colorMap[wirelineZERColor].text}>Good Performance</span>}
+                  {stats.wirelineZER > 120 && <span className={colorMap[wirelineZERColor].text}>Top Performance!</span>}
+                </div>
               </div>
-            </div>
-            <Progress value={progressToNext} className="h-2 mb-3" />
-            <div className="flex items-center justify-between text-sm">
-              <span className={theme.text.muted}>{filteredTotalSales} / {nextTier.contracts_required}</span>
-              <span className="text-emerald-400 font-semibold">+CHF {nextTier.bonus_amount}</span>
-            </div>
+            )}
           </div>
         )}
 
-        {/* All Tiers - Visual Timeline */}
-        <div className="mb-8">
-          <h3 className={`${theme.text.primary} font-semibold text-base sm:text-lg mb-4 sm:mb-6 text-center transition-colors duration-500`}>{category} Bonus Journey</h3>
-          <div className="space-y-2 sm:space-y-3">
-            {stats.tiers.map((tier: any, index: number) => {
-              const isUnlocked = filteredTotalSales >= tier.contracts_required
-              const isCurrent = currentTier?.id === tier.id
-              const IconComponent = (Icons as any)[tier.icon] || Icons.Star
-
-              return (
-                <div
-                  key={tier.id}
-                  className={`relative p-3 sm:p-4 rounded-xl sm:rounded-2xl transition-all duration-500 ${isUnlocked
-                    ? `bg-gradient-to-r from-white/15 to-white/5 border-2 ${theme.cardBorder}`
-                    : `${theme.cardInactive} border ${theme.cardInactiveBorder}`
-                    } ${isCurrent ? `ring-2 ring-white/40 ring-offset-1 sm:ring-offset-2 ring-offset-slate-900` : ''
-                    }`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                      <div
-                        className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex-shrink-0 ${isUnlocked ? 'bg-white/20' : 'bg-white/5'
-                          }`}
-                        style={{ backgroundColor: isUnlocked ? `${tier.color}30` : undefined }}
-                      >
-                        <IconComponent
-                          className="h-5 w-5 sm:h-6 sm:w-6"
-                          style={{ color: isUnlocked ? tier.color : '#ffffff50' }}
-                        />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-                          <h4 className={`font-semibold text-sm sm:text-base ${isUnlocked ? theme.text.primary : theme.iconMuted
-                            }`}>{tier.name}</h4>
-                          {isCurrent && (
-                            <span className={`px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-medium ${theme.accent}/30 ${theme.secondary} rounded-full whitespace-nowrap`}>
-                              Current
-                            </span>
-                          )}
-                        </div>
-                        <p className={`text-[10px] sm:text-xs ${isUnlocked ? theme.text.secondary : theme.iconMuted
-                          }`}>
-                          {tier.contracts_required} contracts
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <div className={`text-base sm:text-lg font-bold ${isUnlocked ? 'text-emerald-400' : theme.iconMuted
-                        }`}>
-                        CHF {tier.bonus_amount}
-                      </div>
-                      <div className={`text-[10px] sm:text-xs ${theme.iconMuted}`}>Bonus</div>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
+        {/* No Target Warning */}
+        {!stats.hasTarget && (
+          <div className={`p-4 sm:p-6 rounded-2xl sm:rounded-3xl backdrop-blur-xl border ${theme.card} ${theme.cardBorder} mb-8`}>
+            <div className="flex items-center gap-3">
+              <Target className="h-6 w-6 text-yellow-400 flex-shrink-0" />
+              <div>
+                <p className={`${theme.text.primary} font-semibold mb-1`}>No Target Set</p>
+                <p className={`${theme.text.muted} text-sm`}>Contact your administrator to set your monthly targets.</p>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
         </div>
         {/* End Main Content */}
 
@@ -321,25 +365,30 @@ export function DashboardView({ stats }: DashboardViewProps) {
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <span className={`${theme.text.muted} text-sm`}>Completion</span>
+                    <span className={`${theme.text.muted} text-sm`}>Employment</span>
                     <span className={`${theme.text.primary} text-sm font-semibold`}>
-                      {Math.round((filteredTotalSales / (nextTier?.contracts_required || 1)) * 100)}%
+                      {stats.employee.employment_percentage}%
                     </span>
                   </div>
-                  <Progress value={progressToNext} className="h-2" />
                 </div>
-                <div className="pt-3 border-t border-white/10">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className={`${theme.text.muted} text-sm`}>Avg per Day</span>
-                    <span className={`${theme.text.primary} font-semibold`}>
-                      {(stats.totalSales / Math.max(1, Math.ceil((Date.now() - new Date(stats.sales[stats.sales.length - 1]?.created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24)))).toFixed(1)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={`${theme.text.muted} text-sm`}>Total Contracts</span>
-                    <span className={`${theme.text.primary} font-semibold`}>{stats.totalSales}</span>
-                  </div>
-                </div>
+                {stats.hasTarget && (
+                  <>
+                    <div className="pt-3 border-t border-white/10">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className={`${theme.text.muted} text-sm`}>Wireless ZER</span>
+                        <span className={`${colorMap[wirelessZERColor].text} font-semibold`}>
+                          {formatZER(stats.wirelessZER)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className={`${theme.text.muted} text-sm`}>Wireline ZER</span>
+                        <span className={`${colorMap[wirelineZERColor].text} font-semibold`}>
+                          {formatZER(stats.wirelineZER)}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -351,7 +400,7 @@ export function DashboardView({ stats }: DashboardViewProps) {
                   <div key={sale.id} className={`p-3 rounded-xl ${theme.cardInactive} border ${theme.cardInactiveBorder}`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        {sale.category === 'Internet' ? (
+                        {sale.category === 'Wireline' ? (
                           <Icons.Wifi className={`h-4 w-4 ${theme.primary}`} />
                         ) : (
                           <Icons.Smartphone className={`h-4 w-4 ${theme.secondary}`} />
