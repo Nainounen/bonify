@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { getCurrentPeriod, calculateEmployeeBonus, calculateShopGZER } from '@/lib/bonus-calculator'
 
@@ -93,15 +93,15 @@ export async function getAdminStats() {
   if (employees && employees.length > 0) {
     const employeeZERs = await Promise.all(
       employees.map(async (emp: any) => {
-        const { data: empTarget } = await supabase
+        const { data: empTarget, error: targetError } = await supabase
           .from('monthly_targets')
           .select('*')
           .eq('employee_id', emp.id)
           .eq('year', year)
           .eq('month', month)
-          .single()
+          .maybeSingle()
 
-        if (!empTarget) return null
+        if (!empTarget || targetError) return null
 
         const empSales = filteredSales.filter((s: any) => s.employee_id === emp.id)
         const empWirelessCount = empSales.filter((s: any) => s.category === 'Wireless').length
@@ -111,8 +111,8 @@ export async function getAdminStats() {
           role: emp.role,
           wirelessCount: empWirelessCount,
           wirelineCount: empWirelineCount,
-          wirelessTarget: empTarget.wireless_target,
-          wirelineTarget: empTarget.wireline_target,
+          wirelessTarget: (empTarget as any).wireless_target,
+          wirelineTarget: (empTarget as any).wireline_target,
           employmentPercentage: emp.employment_percentage || 100,
         })
 
@@ -180,10 +180,10 @@ export async function deleteAllSales() {
 }
 
 export async function deleteUser(userId: string) {
-  const supabase = await createClient()
+  const adminClient = createAdminClient()
 
   // First delete their sales
-  const { error: salesError } = await supabase
+  const { error: salesError } = await adminClient
     .from('sales')
     .delete()
     .eq('employee_id', userId)
@@ -193,13 +193,20 @@ export async function deleteUser(userId: string) {
   }
 
   // Then delete the employee record
-  const { error: userError } = await supabase
+  const { error: userError } = await adminClient
     .from('employees')
     .delete()
     .eq('id', userId)
 
   if (userError) {
     return { error: userError.message }
+  }
+
+  // Finally, delete the auth user
+  const { error: authError } = await adminClient.auth.admin.deleteUser(userId)
+
+  if (authError) {
+    return { error: authError.message }
   }
 
   revalidatePath('/admin')
@@ -214,10 +221,10 @@ export async function createEmployee(params: {
   employmentPercentage: number
   shopId: string | null
 }) {
-  const supabase = await createClient()
+  const adminClient = createAdminClient()
 
   // Create auth user
-  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+  const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
     email: params.email,
     password: params.password,
     email_confirm: true,
@@ -231,14 +238,14 @@ export async function createEmployee(params: {
   }
 
   // Update employee record with role and other details
-  const { error: updateError } = await supabase
-    .from('employees')
+  const { error: updateError } = await (adminClient
+    .from('employees') as any)
     .update({
       name: params.name,
       role: params.role,
       employment_percentage: params.employmentPercentage,
       shop_id: params.shopId,
-    } as any)
+    })
     .eq('id', authData.user.id)
 
   if (updateError) {
@@ -265,6 +272,23 @@ export async function getMonthlyTargets(year: number, month: number) {
   return { targets: data || [] }
 }
 
+export async function getEmployeeTargets(employeeIds: string[], year: number, month: number) {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('monthly_targets')
+    .select('*')
+    .in('employee_id', employeeIds)
+    .eq('year', year)
+    .eq('month', month)
+
+  if (error) {
+    return { error: error.message, targets: [] }
+  }
+
+  return { targets: data || [] }
+}
+
 export async function setMonthlyTarget(params: {
   employeeId: string
   year: number
@@ -276,13 +300,18 @@ export async function setMonthlyTarget(params: {
 
   const { error } = await supabase
     .from('monthly_targets')
-    .upsert({
-      employee_id: params.employeeId,
-      year: params.year,
-      month: params.month,
-      wireless_target: params.wirelessTarget,
-      wireline_target: params.wirelineTarget,
-    } as any)
+    .upsert(
+      {
+        employee_id: params.employeeId,
+        year: params.year,
+        month: params.month,
+        wireless_target: params.wirelessTarget,
+        wireline_target: params.wirelineTarget,
+      } as any,
+      {
+        onConflict: 'employee_id,year,month'
+      }
+    )
 
   if (error) {
     return { error: error.message }
@@ -300,13 +329,13 @@ export async function updateEmployee(params: {
 }) {
   const supabase = await createClient()
 
-  const { error } = await supabase
-    .from('employees')
+  const { error } = await (supabase
+    .from('employees') as any)
     .update({
       role: params.role,
       employment_percentage: params.employmentPercentage,
       shop_id: params.shopId,
-    } as any)
+    })
     .eq('id', params.employeeId)
 
   if (error) {
@@ -348,7 +377,7 @@ export async function calculateAllMonthlyBonuses(year: number, month: number) {
 
   const bonuses = []
 
-  for (const employee of employees) {
+  for (const employee of employees as any[]) {
     // Get employee's sales for the month
     const { data: sales } = await supabase
       .from('sales')
@@ -357,8 +386,8 @@ export async function calculateAllMonthlyBonuses(year: number, month: number) {
       .eq('year', year)
       .eq('month', month)
 
-    const wirelessCount = sales?.filter(s => s.category === 'Wireless').length || 0
-    const wirelineCount = sales?.filter(s => s.category === 'Wireline').length || 0
+    const wirelessCount = (sales as any)?.filter((s: any) => s.category === 'Wireless').length || 0
+    const wirelineCount = (sales as any)?.filter((s: any) => s.category === 'Wireline').length || 0
 
     // Get employee's targets
     const { data: target } = await supabase
@@ -410,15 +439,15 @@ export async function calculateAllMonthlyBonuses(year: number, month: number) {
 
               if (!empTarget) return null
 
-              const empWirelessCount = empSales?.filter(s => s.category === 'Wireless').length || 0
-              const empWirelineCount = empSales?.filter(s => s.category === 'Wireline').length || 0
+              const empWirelessCount = (empSales as any)?.filter((s: any) => s.category === 'Wireless').length || 0
+              const empWirelineCount = (empSales as any)?.filter((s: any) => s.category === 'Wireline').length || 0
 
               const empBonus = calculateEmployeeBonus({
                 role: emp.role,
                 wirelessCount: empWirelessCount,
                 wirelineCount: empWirelineCount,
-                wirelessTarget: empTarget.wireless_target,
-                wirelineTarget: empTarget.wireline_target,
+                wirelessTarget: (empTarget as any).wireless_target,
+                wirelineTarget: (empTarget as any).wireline_target,
                 employmentPercentage: emp.employment_percentage || 100,
               })
 
@@ -445,8 +474,8 @@ export async function calculateAllMonthlyBonuses(year: number, month: number) {
         role: employee.role as any,
         wirelessCount,
         wirelineCount,
-        wirelessTarget: target.wireless_target,
-        wirelineTarget: target.wireline_target,
+        wirelessTarget: (target as any).wireless_target,
+        wirelineTarget: (target as any).wireline_target,
         employmentPercentage: employee.employment_percentage || 100,
       })
 

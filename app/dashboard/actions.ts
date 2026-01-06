@@ -38,8 +38,8 @@ export async function logSale(category: 'Wireless' | 'Wireline') {
     .eq('year', year)
     .eq('month', month)
 
-  const wirelessCount = sales?.filter(s => s.category === 'Wireless').length || 0
-  const wirelineCount = sales?.filter(s => s.category === 'Wireline').length || 0
+  const wirelessCount = (sales as any)?.filter((s: any) => s.category === 'Wireless').length || 0
+  const wirelineCount = (sales as any)?.filter((s: any) => s.category === 'Wireline').length || 0
 
   revalidatePath('/dashboard')
   return { 
@@ -110,26 +110,26 @@ export async function getEmployeeStats() {
     .single()
 
   // Count sales by category
-  const wirelessCount = sales?.filter(s => s.category === 'Wireless').length || 0
-  const wirelineCount = sales?.filter(s => s.category === 'Wireline').length || 0
+  const wirelessCount = (sales as any)?.filter((s: any) => s.category === 'Wireless').length || 0
+  const wirelineCount = (sales as any)?.filter((s: any) => s.category === 'Wireline').length || 0
 
-  const wirelessTarget = target?.wireless_target || 0
-  const wirelineTarget = target?.wireline_target || 0
+  const wirelessTarget = (target as any)?.wireless_target || 0
+  const wirelineTarget = (target as any)?.wireline_target || 0
 
   // Calculate ZER and projected bonus (only for sales roles)
   let projectedBonus = 0
   let wirelessZER = 0
   let wirelineZER = 0
 
-  if (employee.role !== 'shop_manager') {
+  if (employee && (employee as any).role !== 'shop_manager') {
     const { calculateEmployeeBonus } = await import('@/lib/bonus-calculator')
     const bonusCalc = calculateEmployeeBonus({
-      role: employee.role as any,
+      role: (employee as any).role,
       wirelessCount,
       wirelineCount,
       wirelessTarget,
       wirelineTarget,
-      employmentPercentage: employee.employment_percentage || 100,
+      employmentPercentage: (employee as any).employment_percentage || 100,
     })
     
     projectedBonus = bonusCalc.cappedBonus
@@ -138,11 +138,11 @@ export async function getEmployeeStats() {
   } else {
     // For managers, calculate based on shop gZER
     // Get all employees in the same shop
-    if (employee.shop_id) {
+    if (employee && (employee as any).shop_id) {
       const { data: shopEmployees } = await supabase
         .from('employees')
         .select('id, role, employment_percentage')
-        .eq('shop_id', employee.shop_id)
+        .eq('shop_id', (employee as any).shop_id)
         .neq('role', 'shop_manager')
 
       if (shopEmployees && shopEmployees.length > 0) {
@@ -150,7 +150,7 @@ export async function getEmployeeStats() {
         
         // Get ZERs for all shop employees
         const employeeZERs = await Promise.all(
-          shopEmployees.map(async (emp) => {
+          (shopEmployees as any[]).map(async (emp: any) => {
             const { data: empSales } = await supabase
               .from('sales')
               .select('category')
@@ -166,16 +166,16 @@ export async function getEmployeeStats() {
               .eq('month', month)
               .single()
 
-            const empWirelessCount = empSales?.filter(s => s.category === 'Wireless').length || 0
-            const empWirelineCount = empSales?.filter(s => s.category === 'Wireline').length || 0
+            const empWirelessCount = (empSales as any)?.filter((s: any) => s.category === 'Wireless').length || 0
+            const empWirelineCount = (empSales as any)?.filter((s: any) => s.category === 'Wireline').length || 0
 
             const { calculateEmployeeBonus } = await import('@/lib/bonus-calculator')
             const empBonus = calculateEmployeeBonus({
-              role: emp.role as any,
+              role: emp.role,
               wirelessCount: empWirelessCount,
               wirelineCount: empWirelineCount,
-              wirelessTarget: empTarget?.wireless_target || 0,
-              wirelineTarget: empTarget?.wireline_target || 0,
+              wirelessTarget: (empTarget as any)?.wireless_target || 0,
+              wirelineTarget: (empTarget as any)?.wireline_target || 0,
               employmentPercentage: emp.employment_percentage || 100,
             })
 

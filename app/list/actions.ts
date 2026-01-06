@@ -75,8 +75,8 @@ export async function getLeaderboard() {
           role: emp.role,
           wirelessCount: wirelessSales,
           wirelineCount: wirelineSales,
-          wirelessTarget: target.wireless_target || 0,
-          wirelineTarget: target.wireline_target || 0,
+          wirelessTarget: (target as any).wireless_target || 0,
+          wirelineTarget: (target as any).wireline_target || 0,
           employmentPercentage: emp.employment_percentage || 100,
         })
 
