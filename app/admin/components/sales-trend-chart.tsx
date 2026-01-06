@@ -15,7 +15,7 @@ type SalesTrendChartProps = {
 const USER_COLORS = ['#6366f1', '#a855f7', '#ec4899', '#f59e0b', '#10b981', '#8b5cf6', '#14b8a6', '#f43f5e']
 
 export function SalesTrendChart({ salesByUserAndDate, theme }: SalesTrendChartProps) {
-  const [activeTab, setActiveTab] = useState<'Mobile' | 'Internet'>('Internet')
+  const [activeTab, setActiveTab] = useState<'Wireless' | 'Wireline'>('Wireline')
 
   const chartData = (() => {
     // Get all unique dates from the selected category
@@ -53,24 +53,24 @@ export function SalesTrendChart({ salesByUserAndDate, theme }: SalesTrendChartPr
           <CardTitle className={theme.text.primary}>Sales Trend by User (Last 7 Days)</CardTitle>
           <div className="flex gap-2 mt-4">
             <Button
-              onClick={() => setActiveTab('Internet')}
-              variant={activeTab === 'Internet' ? 'default' : 'outline'}
-              className={activeTab === 'Internet' ? theme.buttonGradient : `${theme.card} ${theme.cardBorder}`}
+              onClick={() => setActiveTab('Wireline')}
+              variant={activeTab === 'Wireline' ? 'default' : 'outline'}
+              className={activeTab === 'Wireline' ? theme.buttonGradient : `${theme.card} ${theme.cardBorder}`}
             >
               <Wifi className="h-4 w-4 mr-2" />
-              Internet
+              Wireline
             </Button>
             <Button
-              onClick={() => setActiveTab('Mobile')}
-              variant={activeTab === 'Mobile' ? 'default' : 'outline'}
-              className={activeTab === 'Mobile' ? theme.buttonGradient : `${theme.card} ${theme.cardBorder}`}
+              onClick={() => setActiveTab('Wireless')}
+              variant={activeTab === 'Wireless' ? 'default' : 'outline'}
+              className={activeTab === 'Wireless' ? theme.buttonGradient : `${theme.card} ${theme.cardBorder}`}
             >
               <Smartphone className="h-4 w-4 mr-2" />
-              Mobile
+              Wireless
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="h-[300px]">
+        <CardContent className="h-[300px]" style={{ minHeight: 0 }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
