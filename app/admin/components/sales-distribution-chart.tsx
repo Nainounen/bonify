@@ -9,8 +9,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 
 type SalesDistributionChartProps = {
   stats: {
-    internet: number
-    mobile: number
+    wireline: number
+    wireless: number
   }
   users: any[]
   theme: any
@@ -37,8 +37,8 @@ export function SalesDistributionChart({ stats, users, theme }: SalesDistributio
     } else {
       // Sales by contract type
       return [
-        { name: 'Internet', value: stats.internet },
-        { name: 'Mobile', value: stats.mobile }
+        { name: 'Wireline', value: stats.wireline },
+        { name: 'Wireless', value: stats.wireless }
       ]
     }
   }, [pieChartTab, stats, users])
@@ -71,7 +71,7 @@ export function SalesDistributionChart({ stats, users, theme }: SalesDistributio
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="h-[300px]">
+        <CardContent className="h-[300px]" style={{ minHeight: 0 }}>
           {pieData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
