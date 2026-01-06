@@ -15,34 +15,23 @@ import { EmployeeManagement } from './components/employee-management'
 
 type AdminViewProps = {
   stats: {
-    internet: number
-    mobile: number
+    wireless: number
+    wireline: number
     total: number
     salesByDate: any[]
     salesByUserAndDate: any[]
+    avgZER: number
+    year?: number
+    month?: number
   }
   users: any[]
 }
 
 export function AdminView({ stats, users }: AdminViewProps) {
-  const [currentThemeId, setCurrentThemeId] = useState('default')
   const router = useRouter()
   
-  // Load theme from localStorage on mount
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('bonify-theme')
-    if (savedTheme && themes[savedTheme]) {
-      setCurrentThemeId(savedTheme)
-    }
-  }, [])
-
-  // Save theme to localStorage when changed
-  const handleThemeChange = (themeId: string) => {
-    setCurrentThemeId(themeId)
-    localStorage.setItem('bonify-theme', themeId)
-  }
-  
-  const theme = getTheme(currentThemeId).variants.Internet
+  // Admin dashboard always uses Swisscom theme
+  const theme = getTheme('swisscom').variants.Internet
 
   const handleExportSales = async () => {
     if (!rateLimiter.check('export', RATE_LIMITS.EXPORT)) {
@@ -84,8 +73,6 @@ export function AdminView({ stats, users }: AdminViewProps) {
       <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6 md:space-y-8 relative z-10">
         <AdminHeader 
           theme={theme}
-          currentThemeId={currentThemeId}
-          onThemeChange={handleThemeChange}
           onExport={handleExportSales}
           onRefresh={handleRefresh}
         />

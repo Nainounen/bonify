@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Users, Trash2, Save, Plus, Edit2, X, Target, Key } from 'lucide-react'
-import { deleteUser, updateEmployee, getShops, setMonthlyTarget, createEmployee } from '../actions'
+import { deleteUser, updateEmployee, getShops, setMonthlyTarget, createEmployee, getEmployeeTargets } from '../actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { getCurrentPeriod } from '@/lib/bonus-calculator'
@@ -26,35 +26,45 @@ export function EmployeeManagement({ users, theme }: EmployeeManagementProps) {
   const [editData, setEditData] = useState<any>({})
   const [targets, setTargets] = useState<Record<string, any>>({})
   const [creatingUser, setCreatingUser] = useState(false)
+  const [defaultShopId, setDefaultShopId] = useState<string>('none')
   const [newUser, setNewUser] = useState({
     name: '',
     email: '',
     password: '',
     role: 'internal_sales',
     employmentPercentage: 100,
-    shopId: '',
+    shopId: 'none',
   })
 
   useEffect(() => {
     loadShops()
     loadTargets()
-  }, [])
+  }, [users])
 
   const loadShops = async () => {
     const result = await getShops()
     if (!result.error) {
       setShops(result.shops || [])
+      // Find and set Zurich Main as default
+      const zurichMain = (result.shops || []).find((shop: any) => shop.name === 'Zurich Main')
+      if (zurichMain) {
+        setDefaultShopId((zurichMain as any).id)
+        setNewUser(prev => ({ ...prev, shopId: (zurichMain as any).id }))
+      }
     }
   }
 
   const loadTargets = async () => {
     // Load current targets for all users
+    const employeeIds = users.map(u => u.id)
+    const result = await getEmployeeTargets(employeeIds, year, month)
+    
     const targetData: Record<string, any> = {}
     for (const user of users) {
-      // This would need a new action to fetch targets
+      const target = (result.targets || []).find((t: any) => t.employee_id === user.id)
       targetData[user.id] = {
-        wireless: 0,
-        wireline: 0,
+        wireless: (target as any)?.wireless_target || 0,
+        wireline: (target as any)?.wireline_target || 0,
       }
     }
     setTargets(targetData)
@@ -65,7 +75,7 @@ export function EmployeeManagement({ users, theme }: EmployeeManagementProps) {
     setEditData({
       role: user.role || 'internal_sales',
       employmentPercentage: user.employment_percentage || 100,
-      shopId: user.shop_id || '',
+      shopId: user.shop_id || 'none',
     })
   }
 
@@ -74,7 +84,7 @@ export function EmployeeManagement({ users, theme }: EmployeeManagementProps) {
       employeeId: userId,
       role: editData.role,
       employmentPercentage: editData.employmentPercentage,
-      shopId: editData.shopId || null,
+      shopId: editData.shopId === 'none' ? null : (editData.shopId || null),
     })
 
     if (result.error) {
@@ -131,7 +141,7 @@ export function EmployeeManagement({ users, theme }: EmployeeManagementProps) {
       password: newUser.password,
       role: newUser.role,
       employmentPercentage: newUser.employmentPercentage,
-      shopId: newUser.shopId || null,
+      shopId: newUser.shopId === 'none' ? null : (newUser.shopId || null),
     })
 
     if (result.error) {
@@ -145,7 +155,7 @@ export function EmployeeManagement({ users, theme }: EmployeeManagementProps) {
         password: '',
         role: 'internal_sales',
         employmentPercentage: 100,
-        shopId: '',
+        shopId: defaultShopId,
       })
       router.refresh()
     }
@@ -210,13 +220,13 @@ export function EmployeeManagement({ users, theme }: EmployeeManagementProps) {
               <div>
                 <Label>Role</Label>
                 <Select value={newUser.role} onValueChange={(value) => setNewUser({ ...newUser, role: value })}>
-                  <SelectTrigger>
+                  <SelectTrigger className={theme.text.primary}>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="internal_sales">Internal Sales</SelectItem>
-                    <SelectItem value="external_sales">External Sales</SelectItem>
-                    <SelectItem value="shop_manager">Shop Manager</SelectItem>
+                  <SelectContent className={`${theme.card} border ${theme.cardBorder}`}>
+                    <SelectItem value="internal_sales" className="focus:bg-accent focus:text-accent-foreground">Internal Sales</SelectItem>
+                    <SelectItem value="external_sales" className="focus:bg-accent focus:text-accent-foreground">External Sales</SelectItem>
+                    <SelectItem value="shop_manager" className="focus:bg-accent focus:text-accent-foreground">Shop Manager</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -233,13 +243,13 @@ export function EmployeeManagement({ users, theme }: EmployeeManagementProps) {
               <div>
                 <Label>Shop</Label>
                 <Select value={newUser.shopId} onValueChange={(value) => setNewUser({ ...newUser, shopId: value })}>
-                  <SelectTrigger>
+                  <SelectTrigger className={theme.text.primary}>
                     <SelectValue placeholder="Select shop..." />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                  <SelectContent className={`${theme.card} border ${theme.cardBorder}`}>
+                    <SelectItem value="none" className="focus:bg-accent focus:text-accent-foreground">None</SelectItem>
                     {shops.map((shop) => (
-                      <SelectItem key={shop.id} value={shop.id}>{shop.name}</SelectItem>
+                      <SelectItem key={shop.id} value={shop.id} className="focus:bg-accent focus:text-accent-foreground">{shop.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -259,7 +269,7 @@ export function EmployeeManagement({ users, theme }: EmployeeManagementProps) {
           const currentData = isEditing ? editData : {
             role: user.role || 'internal_sales',
             employmentPercentage: user.employment_percentage || 100,
-            shopId: user.shop_id || '',
+            shopId: user.shop_id || 'none',
           }
 
           return (
@@ -321,13 +331,13 @@ export function EmployeeManagement({ users, theme }: EmployeeManagementProps) {
                         value={currentData.role}
                         onValueChange={(value) => setEditData({ ...editData, role: value })}
                       >
-                        <SelectTrigger className="h-8 text-sm">
+                        <SelectTrigger className={`h-8 text-sm ${theme.text.primary}`}>
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="internal_sales">Internal Sales</SelectItem>
-                          <SelectItem value="external_sales">External Sales</SelectItem>
-                          <SelectItem value="shop_manager">Shop Manager</SelectItem>
+                        <SelectContent className={`${theme.card} border ${theme.cardBorder}`}>
+                          <SelectItem value="internal_sales" className="focus:bg-accent focus:text-accent-foreground">Internal Sales</SelectItem>
+                          <SelectItem value="external_sales" className="focus:bg-accent focus:text-accent-foreground">External Sales</SelectItem>
+                          <SelectItem value="shop_manager" className="focus:bg-accent focus:text-accent-foreground">Shop Manager</SelectItem>
                         </SelectContent>
                       </Select>
                     ) : (
@@ -361,13 +371,13 @@ export function EmployeeManagement({ users, theme }: EmployeeManagementProps) {
                       value={currentData.shopId}
                       onValueChange={(value) => setEditData({ ...editData, shopId: value })}
                     >
-                      <SelectTrigger className="h-8 text-sm">
+                      <SelectTrigger className={`h-8 text-sm ${theme.text.primary}`}>
                         <SelectValue placeholder="None" />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                      <SelectContent className={`${theme.card} border ${theme.cardBorder}`}>
+                        <SelectItem value="none" className="focus:bg-accent focus:text-accent-foreground">None</SelectItem>
                         {shops.map((shop) => (
-                          <SelectItem key={shop.id} value={shop.id}>{shop.name}</SelectItem>
+                          <SelectItem key={shop.id} value={shop.id} className="focus:bg-accent focus:text-accent-foreground">{shop.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
