@@ -206,6 +206,49 @@ export async function deleteUser(userId: string) {
   return { success: true }
 }
 
+export async function createEmployee(params: {
+  name: string
+  email: string
+  password: string
+  role: string
+  employmentPercentage: number
+  shopId: string | null
+}) {
+  const supabase = await createClient()
+
+  // Create auth user
+  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+    email: params.email,
+    password: params.password,
+    email_confirm: true,
+    user_metadata: {
+      name: params.name,
+    },
+  })
+
+  if (authError) {
+    return { error: authError.message }
+  }
+
+  // Update employee record with role and other details
+  const { error: updateError } = await supabase
+    .from('employees')
+    .update({
+      name: params.name,
+      role: params.role,
+      employment_percentage: params.employmentPercentage,
+      shop_id: params.shopId,
+    } as any)
+    .eq('id', authData.user.id)
+
+  if (updateError) {
+    return { error: updateError.message }
+  }
+
+  revalidatePath('/admin')
+  return { success: true, userId: authData.user.id }
+}
+
 export async function getMonthlyTargets(year: number, month: number) {
   const supabase = await createClient()
 

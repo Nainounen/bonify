@@ -10,9 +10,8 @@ import { AdminHeader } from './components/admin-header'
 import { StatsCards } from './components/stats-cards'
 import { SalesTrendChart } from './components/sales-trend-chart'
 import { SalesDistributionChart } from './components/sales-distribution-chart'
-import { UsersList } from './components/users-list'
 import { DangerZone } from './components/danger-zone'
-import { MonthlyTargetsManager } from './components/monthly-targets-manager'
+import { EmployeeManagement } from './components/employee-management'
 
 type AdminViewProps = {
   stats: {
@@ -98,12 +97,9 @@ export function AdminView({ stats, users }: AdminViewProps) {
           <SalesDistributionChart stats={stats} users={users} theme={theme} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
-          <MonthlyTargetsManager users={users} theme={theme} />
-          <UsersList users={users} theme={theme} />
-        </div>
+        <EmployeeManagement users={users} theme={theme} />
 
-        <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6">
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 mt-6">
           <DangerZone theme={theme} />
         </div>
       </div>

@@ -10,7 +10,6 @@ import { Logo } from '@/components/logo'
 import { themes, type GlobalTheme } from '@/lib/themes'
 
 export default function LoginPage() {
-  const [isSignUp, setIsSignUp] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [theme, setTheme] = useState('default')
@@ -24,7 +23,7 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
     
-    const result = isSignUp ? await signup(formData) : await login(formData)
+    const result = await login(formData)
     
     if (result?.error) {
       setError(result.error)
@@ -44,24 +43,11 @@ export default function LoginPage() {
           </div>
           <CardTitle className="text-xl sm:text-2xl md:text-3xl">Bonify</CardTitle>
           <CardDescription className="text-sm sm:text-base">
-            {isSignUp ? 'Create your account to start tracking sales' : 'Sign in to track your bonus progress'}
+            Sign in to track your bonus progress
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
           <form action={handleSubmit} className="space-y-3 sm:space-y-4">
-            {isSignUp && (
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder="John Doe"
-                  required
-                  disabled={loading}
-                />
-              </div>
-            )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -90,22 +76,9 @@ export default function LoginPage() {
               </div>
             )}
             <Button type="submit" className="w-full h-11 sm:h-12 text-base sm:text-lg font-semibold touch-manipulation" disabled={loading}>
-              {loading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
+              {loading ? 'Loading...' : 'Sign In'}
             </Button>
           </form>
-          <div className="mt-4 sm:mt-5 text-center text-sm">
-            <button
-              type="button"
-              onClick={() => {
-                setIsSignUp(!isSignUp)
-                setError(null)
-              }}
-              className="text-muted-foreground hover:text-primary underline-offset-4 hover:underline touch-manipulation py-2 px-3"
-              disabled={loading}
-            >
-              {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
-            </button>
-          </div>
         </CardContent>
       </Card>
     </div>
