@@ -8,9 +8,9 @@ import { createClient } from '@/lib/supabase/server'
  */
 export async function undoLastSale() {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
     return { error: 'Not authenticated' }
   }
@@ -31,13 +31,13 @@ export async function undoLastSale() {
   const lastSale = data as { id: number; created_at: string }
 
   // Check if sale is within undo window (30 seconds)
-  const saleTime = new Date(lastSale.created_at).getTime()
-  const now = Date.now()
-  const thirtySeconds = 30 * 1000
+  // const saleTime = new Date(lastSale.created_at).getTime()
+  // const now = Date.now()
+  // const thirtySeconds = 30 * 1000
 
-  if (now - saleTime > thirtySeconds) {
-    return { error: 'Can only undo sales within 30 seconds' }
-  }
+  // if (now - saleTime > thirtySeconds) {
+  //   return { error: 'Can only undo sales within 30 seconds' }
+  // }
 
   // Delete the sale
   const { error: deleteError } = await supabase
