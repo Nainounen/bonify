@@ -58,7 +58,7 @@ export function EmployeeManagement({ users, theme }: EmployeeManagementProps) {
     // Load current targets for all users
     const employeeIds = users.map(u => u.id)
     const result = await getEmployeeTargets(employeeIds, year, month)
-    
+
     const targetData: Record<string, any> = {}
     for (const user of users) {
       const target = (result.targets || []).find((t: any) => t.employee_id === user.id)
@@ -408,6 +408,7 @@ export function EmployeeManagement({ users, theme }: EmployeeManagementProps) {
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
+                        <Label className="text-xs">Wireless</Label>
                         <Input
                           type="number"
                           min="0"
@@ -424,6 +425,7 @@ export function EmployeeManagement({ users, theme }: EmployeeManagementProps) {
                         />
                       </div>
                       <div>
+                        <Label className="text-xs">Wireline</Label>
                         <Input
                           type="number"
                           min="0"
