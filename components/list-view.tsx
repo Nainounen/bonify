@@ -24,7 +24,8 @@ type ListViewProps = {
 
 export function ListView({ user, leaderboard }: ListViewProps) {
   const [currentThemeId, setCurrentThemeId] = useState('default')
-  
+  const [view, setView] = useState<'all' | 'wireless' | 'wireline'>('all')
+
   // Load theme from localStorage on mount
   useEffect(() => {
     const savedTheme = localStorage.getItem('bonify-theme')
@@ -38,7 +39,7 @@ export function ListView({ user, leaderboard }: ListViewProps) {
     setCurrentThemeId(themeId)
     localStorage.setItem('bonify-theme', themeId)
   }
-  
+
   const theme = getTheme(currentThemeId).variants.Internet
 
   const handleExportLeaderboard = () => {
@@ -76,9 +77,9 @@ export function ListView({ user, leaderboard }: ListViewProps) {
             </div>
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={handleExportLeaderboard}
               className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-slate-500/10 h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}
             >
@@ -127,66 +128,111 @@ export function ListView({ user, leaderboard }: ListViewProps) {
           <p className={`${theme.text.muted} text-sm sm:text-base`}>See who's leading the sales charts</p>
         </div>
 
+        {/* Tab Switcher */}
+        <div className="flex justify-center mb-6">
+          <div className={`flex p-1 rounded-xl ${theme.card} ${theme.cardBorder} border`}>
+            <button
+              onClick={() => setView('all')}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${view === 'all'
+                  ? `${theme.primary} text-white shadow-lg`
+                  : `${theme.text.muted} hover:${theme.text.primary}`
+                }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setView('wireless')}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${view === 'wireless'
+                  ? `${theme.primary} text-white shadow-lg`
+                  : `${theme.text.muted} hover:${theme.text.primary}`
+                }`}
+            >
+              Wireless
+            </button>
+            <button
+              onClick={() => setView('wireline')}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${view === 'wireline'
+                  ? `${theme.primary} text-white shadow-lg`
+                  : `${theme.text.muted} hover:${theme.text.primary}`
+                }`}
+            >
+              Wireline
+            </button>
+          </div>
+        </div>
+
         <div className="space-y-3 sm:space-y-4">
-          {leaderboard.map((employee, index) => {
-            const isCurrentUser = employee.id === user.id
+          {[...leaderboard]
+            .sort((a, b) => {
+              if (view === 'wireless') return b.wirelessSales - a.wirelessSales || b.totalSales - a.totalSales
+              if (view === 'wireline') return b.wirelineSales - a.wirelineSales || b.totalSales - a.totalSales
+              return b.totalSales - a.totalSales
+            })
+            .map((employee, index) => {
+              const isCurrentUser = employee.id === user.id
+              const displayValue = view === 'wireless' ? employee.wirelessSales : (view === 'wireline' ? employee.wirelineSales : employee.totalSales)
+              const displayLabel = view === 'wireless' ? 'Wireless' : (view === 'wireline' ? 'Wireline' : 'Total')
 
-            return (
-              <div
-                key={employee.id}
-                className={`relative overflow-hidden rounded-xl sm:rounded-2xl border p-3 sm:p-4 transition-all
+              return (
+                <div
+                  key={employee.id}
+                  className={`relative overflow-hidden rounded-xl sm:rounded-2xl border p-3 sm:p-4 transition-all
                   ${isCurrentUser
-                    ? `${theme.card} ${theme.cardBorder} shadow-lg`
-                    : `${theme.cardInactive} ${theme.cardInactiveBorder} hover:${theme.card}`
-                  }`}
-              >
-                <div className="flex items-center gap-2.5 sm:gap-4">
-                  <div className="flex-none w-6 sm:w-8 text-center">
-                    <span className={`text-base sm:text-lg font-bold ${index < 3 ? 'text-yellow-400' : theme.iconMuted}`}>
-                      #{index + 1}
-                    </span>
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-                      <h3 className={`font-medium truncate text-sm sm:text-base ${isCurrentUser ? theme.text.primary : theme.text.secondary}`}>
-                        {employee.name}
-                      </h3>
-                      {isCurrentUser && (
-                        <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-medium uppercase tracking-wide ${theme.accent}/20 ${theme.primary} whitespace-nowrap flex-shrink-0`}>
-                          You
-                        </span>
-                      )}
+                      ? `${theme.card} ${theme.cardBorder} shadow-lg`
+                      : `${theme.cardInactive} ${theme.cardInactiveBorder} hover:${theme.card}`
+                    }`}
+                >
+                  <div className="flex items-center gap-2.5 sm:gap-4">
+                    <div className="flex-none w-6 sm:w-8 text-center">
+                      <span className={`text-base sm:text-lg font-bold ${index < 3 ? 'text-yellow-400' : theme.iconMuted}`}>
+                        #{index + 1}
+                      </span>
                     </div>
-                    <div className={`flex items-center gap-1.5 sm:gap-2 text-xs ${theme.text.muted}`}>
-                      <span>{employee.role === 'shop_manager' ? 'Shop Manager' : employee.role === 'internal_sales' ? 'Internal' : 'External'}</span>
-                      {employee.projectedBonus > 0 && (
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
+                        <h3 className={`font-medium truncate text-sm sm:text-base ${isCurrentUser ? theme.text.primary : theme.text.secondary}`}>
+                          {employee.name}
+                        </h3>
+                        {isCurrentUser && (
+                          <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-medium uppercase tracking-wide ${theme.accent}/20 ${theme.primary} whitespace-nowrap flex-shrink-0`}>
+                            You
+                          </span>
+                        )}
+                      </div>
+                      <div className={`flex items-center gap-1.5 sm:gap-2 text-xs ${theme.text.muted}`}>
+                        <span>{employee.role === 'shop_manager' ? 'Shop Manager' : employee.role === 'internal_sales' ? 'Internal' : 'External'}</span>
+                        {employee.projectedBonus > 0 && (
+                          <>
+                            <span>•</span>
+                            <span className="text-emerald-400 font-semibold">CHF {employee.projectedBonus.toFixed(0)}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 sm:gap-4 text-right flex-shrink-0">
+                      {view === 'all' && (
                         <>
-                          <span>•</span>
-                          <span className="text-emerald-400 font-semibold">CHF {employee.projectedBonus.toFixed(0)}</span>
+                          <div className="hidden md:block">
+                            <div className={`text-sm font-medium ${theme.primary}`}>{employee.wirelineSales}</div>
+                            <div className={`text-[10px] ${theme.iconMuted} uppercase`}>W+</div>
+                          </div>
+                          <div className="hidden md:block">
+                            <div className={`text-sm font-medium ${theme.secondary}`}>{employee.wirelessSales}</div>
+                            <div className={`text-[10px] ${theme.iconMuted} uppercase`}>W-</div>
+                          </div>
                         </>
                       )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 sm:gap-4 text-right flex-shrink-0">
-                    <div className="hidden md:block">
-                      <div className={`text-sm font-medium ${theme.primary}`}>{employee.wirelineSales}</div>
-                      <div className={`text-[10px] ${theme.iconMuted} uppercase`}>W+</div>
-                    </div>
-                    <div className="hidden md:block">
-                      <div className={`text-sm font-medium ${theme.secondary}`}>{employee.wirelessSales}</div>
-                      <div className={`text-[10px] ${theme.iconMuted} uppercase`}>W-</div>
-                    </div>
-                    <div>
-                      <div className={`text-lg sm:text-xl font-bold ${theme.text.primary}`}>{employee.totalSales}</div>
-                      <div className={`text-xs ${theme.text.muted}`}>Total</div>
+                      <div>
+                        <div className={`text-lg sm:text-xl font-bold ${theme.text.primary}`}>{displayValue}</div>
+                        <div className={`text-xs ${theme.text.muted}`}>{displayLabel}</div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
 
           {leaderboard.length === 0 && (
             <div className={`text-center py-12 ${theme.iconMuted}`}>

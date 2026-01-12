@@ -20,8 +20,8 @@ export async function getAdminStats() {
   }
 
   // Filter out admin and list users
-  const filteredSales = sales.filter((s: any) => 
-    s.employees?.email !== 'admin@admin.com' && 
+  const filteredSales = sales.filter((s: any) =>
+    s.employees?.email !== 'admin@admin.com' &&
     s.employees?.email !== 'list@admin.com'
   )
 
@@ -45,12 +45,12 @@ export async function getAdminStats() {
 
   // Group sales by user, date, and category for individual user trend lines
   const salesByUserMap: any = {}
-  
+
   filteredSales.forEach((sale: any) => {
     const date = new Date(sale.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     const userName = sale.employees?.name || 'Unknown'
     const key = `${userName}-${sale.category}`
-    
+
     if (!salesByUserMap[key]) {
       salesByUserMap[key] = {
         userName,
@@ -58,20 +58,20 @@ export async function getAdminStats() {
         salesByDate: {}
       }
     }
-    
+
     if (!salesByUserMap[key].salesByDate[date]) {
       salesByUserMap[key].salesByDate[date] = 0
     }
-    
+
     salesByUserMap[key].salesByDate[date]++
   })
 
   // Convert to array format suitable for recharts
   const salesByUserAndDate = Object.values(salesByUserMap).map((userData: any) => {
-    const dates = Object.keys(userData.salesByDate).sort((a, b) => 
+    const dates = Object.keys(userData.salesByDate).sort((a, b) =>
       new Date(a).getTime() - new Date(b).getTime()
     ).slice(-7)
-    
+
     return {
       userName: userData.userName,
       category: userData.category,
@@ -155,8 +155,8 @@ export async function getUsers() {
   }
 
   // Filter out admin and list users
-  const filteredUsers = users.filter((user: any) => 
-    user.email !== 'admin@admin.com' && 
+  const filteredUsers = users.filter((user: any) =>
+    user.email !== 'admin@admin.com' &&
     user.email !== 'list@admin.com'
   )
 
@@ -295,6 +295,7 @@ export async function setMonthlyTarget(params: {
   month: number
   wirelessTarget: number
   wirelineTarget: number
+  shopManagerYtdPercentage?: number
 }) {
   const supabase = await createClient()
 
@@ -307,6 +308,7 @@ export async function setMonthlyTarget(params: {
         month: params.month,
         wireless_target: params.wirelessTarget,
         wireline_target: params.wirelineTarget,
+        shop_manager_ytd_percentage: params.shopManagerYtdPercentage || 0,
       } as any,
       {
         onConflict: 'employee_id,year,month'
@@ -409,65 +411,20 @@ export async function calculateAllMonthlyBonuses(year: number, month: number) {
     let level2WirelineOrders = 0
 
     if (employee.role === 'shop_manager') {
-      // Calculate shop gZER for managers
-      if (employee.shop_id) {
-        const { data: shopEmployees } = await supabase
-          .from('employees')
-          .select('id, role, employment_percentage')
-          .eq('shop_id', employee.shop_id)
-          .neq('role', 'shop_manager')
+      // Calculate bonus for shop manager based on YTD percentage manually entered
+      // Formula: (min(ytd_percentage, 200) - 100) * 50
+      // Only counts above 100%, max 200%
+      const ytdPercentage = (target as any).shop_manager_ytd_percentage || 0
 
-        if (shopEmployees && shopEmployees.length > 0) {
-          const { calculateShopGZER, calculateShopManagerBonus } = await import('@/lib/bonus-calculator')
-          
-          const employeeZERs = await Promise.all(
-            shopEmployees.map(async (emp: any) => {
-              const { data: empSales } = await supabase
-                .from('sales')
-                .select('category')
-                .eq('employee_id', emp.id)
-                .eq('year', year)
-                .eq('month', month)
+      const percentageForBonus = Math.min(Math.max(ytdPercentage, 100), 200)
+      const percentagePoints = percentageForBonus - 100
 
-              const { data: empTarget } = await supabase
-                .from('monthly_targets')
-                .select('*')
-                .eq('employee_id', emp.id)
-                .eq('year', year)
-                .eq('month', month)
-                .single()
+      bonusAmount = percentagePoints * 50
 
-              if (!empTarget) return null
+      // Set ZER to YTD percentage for display purposes
+      wirelessZER = ytdPercentage
+      wirelineZER = ytdPercentage
 
-              const empWirelessCount = (empSales as any)?.filter((s: any) => s.category === 'Wireless').length || 0
-              const empWirelineCount = (empSales as any)?.filter((s: any) => s.category === 'Wireline').length || 0
-
-              const empBonus = calculateEmployeeBonus({
-                role: emp.role,
-                wirelessCount: empWirelessCount,
-                wirelineCount: empWirelineCount,
-                wirelessTarget: (empTarget as any).wireless_target,
-                wirelineTarget: (empTarget as any).wireline_target,
-                employmentPercentage: emp.employment_percentage || 100,
-              })
-
-              return {
-                wirelessZER: empBonus.wirelessZER,
-                wirelineZER: empBonus.wirelineZER,
-              }
-            })
-          )
-
-          const validZERs = employeeZERs.filter(z => z !== null) as { wirelessZER: number; wirelineZER: number }[]
-          if (validZERs.length > 0) {
-            const shopGZER = calculateShopGZER(validZERs)
-            const managerBonus = calculateShopManagerBonus(shopGZER)
-            bonusAmount = managerBonus.bonusAmount
-            wirelessZER = shopGZER
-            wirelineZER = shopGZER
-          }
-        }
-      }
     } else {
       // Calculate bonus for sales employees
       const bonusCalc = calculateEmployeeBonus({
