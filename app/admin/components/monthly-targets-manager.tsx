@@ -19,11 +19,11 @@ export function MonthlyTargetsManager({ users, theme }: MonthlyTargetsManagerPro
   const router = useRouter()
   const { year, month } = getCurrentPeriod()
   const [saving, setSaving] = useState(false)
-  const [targets, setTargets] = useState<Record<string, { wireless: number; wireline: number }>>({})
+  const [targets, setTargets] = useState<Record<string, { wireless: number; wireline: number; ytdPercentage?: number }>>({})
 
   const handleSaveTargets = async () => {
     setSaving(true)
-    
+
     try {
       for (const user of users) {
         const userTargets = targets[user.id]
@@ -32,12 +32,13 @@ export function MonthlyTargetsManager({ users, theme }: MonthlyTargetsManagerPro
             employeeId: user.id,
             year,
             month,
-            wirelessTarget: userTargets.wireless,
-            wirelineTarget: userTargets.wireline,
+            wirelessTarget: userTargets.wireless || 0,
+            wirelineTarget: userTargets.wireline || 0,
+            shopManagerYtdPercentage: userTargets.ytdPercentage || 0,
           })
         }
       }
-      
+
       toast.success('Targets saved successfully')
       router.refresh()
     } catch (error) {
@@ -50,14 +51,15 @@ export function MonthlyTargetsManager({ users, theme }: MonthlyTargetsManagerPro
   const handleBulkSet = () => {
     const wireless = prompt('Enter Wireless target for all employees:')
     const wireline = prompt('Enter Wireline target for all employees:')
-    
+
     if (wireless && wireline) {
-      const newTargets: Record<string, { wireless: number; wireline: number }> = {}
+      const newTargets: Record<string, { wireless: number; wireline: number; ytdPercentage?: number }> = {}
       users.forEach(user => {
         if (user.role !== 'shop_manager') {
           newTargets[user.id] = {
             wireless: parseInt(wireless),
             wireline: parseInt(wireline),
+            ytdPercentage: 0,
           }
         }
       })
@@ -70,7 +72,7 @@ export function MonthlyTargetsManager({ users, theme }: MonthlyTargetsManagerPro
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className={`${theme.text.primary} flex items-center gap-2`}>
-            <Target className="h-5 w-5" /> 
+            <Target className="h-5 w-5" />
             Monthly Targets ({new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })})
           </CardTitle>
           <div className="flex gap-2">
@@ -107,7 +109,7 @@ export function MonthlyTargetsManager({ users, theme }: MonthlyTargetsManagerPro
                   </div>
                 </div>
               </div>
-              
+
               {user.role !== 'shop_manager' ? (
                 <div className="grid grid-cols-2 gap-2">
                   <div>
@@ -123,6 +125,7 @@ export function MonthlyTargetsManager({ users, theme }: MonthlyTargetsManagerPro
                           [user.id]: {
                             wireless: parseInt(e.target.value) || 0,
                             wireline: prev[user.id]?.wireline || 0,
+                            ytdPercentage: prev[user.id]?.ytdPercentage || 0,
                           }
                         }))
                       }}
@@ -142,6 +145,7 @@ export function MonthlyTargetsManager({ users, theme }: MonthlyTargetsManagerPro
                           [user.id]: {
                             wireless: prev[user.id]?.wireless || 0,
                             wireline: parseInt(e.target.value) || 0,
+                            ytdPercentage: prev[user.id]?.ytdPercentage || 0,
                           }
                         }))
                       }}
@@ -150,8 +154,26 @@ export function MonthlyTargetsManager({ users, theme }: MonthlyTargetsManagerPro
                   </div>
                 </div>
               ) : (
-                <div className={`text-xs ${theme.text.muted} italic`}>
-                  Managers don't have individual targets (bonus based on shop gZER)
+                <div>
+                  <label className={`text-xs ${theme.text.muted} mb-1 block`}>YTD Achievement (%)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="200"
+                    placeholder="100"
+                    value={targets[user.id]?.ytdPercentage ?? ''}
+                    onChange={(e) => {
+                      setTargets(prev => ({
+                        ...prev,
+                        [user.id]: {
+                          wireless: prev[user.id]?.wireless || 0,
+                          wireline: prev[user.id]?.wireline || 0,
+                          ytdPercentage: parseInt(e.target.value) || 0,
+                        }
+                      }))
+                    }}
+                    className="h-8 text-sm"
+                  />
                 </div>
               )}
             </div>

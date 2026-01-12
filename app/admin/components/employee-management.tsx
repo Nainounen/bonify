@@ -65,6 +65,7 @@ export function EmployeeManagement({ users, theme }: EmployeeManagementProps) {
       targetData[user.id] = {
         wireless: (target as any)?.wireless_target || 0,
         wireline: (target as any)?.wireline_target || 0,
+        ytdPercentage: (target as any)?.shop_manager_ytd_percentage || 0,
       }
     }
     setTargets(targetData)
@@ -104,8 +105,9 @@ export function EmployeeManagement({ users, theme }: EmployeeManagementProps) {
       employeeId: userId,
       year,
       month,
-      wirelessTarget: target.wireless,
-      wirelineTarget: target.wireline,
+      wirelessTarget: target.wireless || 0,
+      wirelineTarget: target.wireline || 0,
+      shopManagerYtdPercentage: target.ytdPercentage || 0,
     })
 
     if (result.error) {
@@ -389,23 +391,53 @@ export function EmployeeManagement({ users, theme }: EmployeeManagementProps) {
                 </div>
 
                 {/* Monthly Targets */}
-                {currentData.role !== 'shop_manager' && (
-                  <div className={`pt-3 border-t ${theme.cardInactiveBorder}`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <Label className="text-xs flex items-center gap-1">
-                        <Target className="h-3 w-3" />
-                        {new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short' })} Targets
-                      </Label>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleSaveTarget(user.id)}
-                        className="h-6 px-2 text-xs"
-                      >
-                        <Save className="h-3 w-3 mr-1" />
-                        Save
-                      </Button>
+                <div className={`pt-3 border-t ${theme.cardInactiveBorder}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-xs flex items-center gap-1">
+                      <Target className="h-3 w-3" />
+                      {new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short' })} {currentData.role === 'shop_manager' ? 'YTD Achievement' : 'Targets'}
+                    </Label>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleSaveTarget(user.id)}
+                      className="h-6 px-2 text-xs"
+                    >
+                      <Save className="h-3 w-3 mr-1" />
+                      Save
+                    </Button>
+                  </div>
+
+                  {currentData.role === 'shop_manager' ? (
+                    <div className="space-y-2">
+                      <div>
+                        <Label className="text-xs">YTD Achievement (%)</Label>
+                        <div className="flex gap-2 items-center">
+                          <Input
+                            type="number"
+                            min="0"
+                            max="200"
+                            placeholder="100"
+                            value={targets[user.id]?.ytdPercentage ?? ''}
+                            onChange={(e) => setTargets({
+                              ...targets,
+                              [user.id]: {
+                                ...targets[user.id],
+                                ytdPercentage: parseInt(e.target.value) || 0,
+                              }
+                            })}
+                            className="h-8 text-sm"
+                          />
+                          <div className={`text-sm font-medium ${theme.text.accent} whitespace-nowrap min-w-[80px]`}>
+                            CHF {Math.max(0, (Math.min(Math.max(targets[user.id]?.ytdPercentage || 0, 100), 200) - 100) * 50)}.-
+                          </div>
+                        </div>
+                        <p className={`text-[10px] ${theme.text.muted} mt-1`}>
+                          Starting at 100%, 50 CHF per 1%. Max 200%.
+                        </p>
+                      </div>
                     </div>
+                  ) : (
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <Label className="text-xs">Wireless</Label>
@@ -442,8 +474,8 @@ export function EmployeeManagement({ users, theme }: EmployeeManagementProps) {
                         />
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </CardContent>
             </Card>
           )
