@@ -42,8 +42,8 @@ export async function logSale(category: 'Wireless' | 'Wireline') {
   const wirelineCount = (sales as any)?.filter((s: any) => s.category === 'Wireline').length || 0
 
   revalidatePath('/dashboard')
-  return { 
-    success: true, 
+  return {
+    success: true,
     wirelessCount,
     wirelineCount,
     year,
@@ -131,68 +131,21 @@ export async function getEmployeeStats() {
       wirelineTarget,
       employmentPercentage: (employee as any).employment_percentage || 100,
     })
-    
+
     projectedBonus = bonusCalc.cappedBonus
     wirelessZER = bonusCalc.wirelessZER
     wirelineZER = bonusCalc.wirelineZER
   } else {
-    // For managers, calculate based on shop gZER
-    // Get all employees in the same shop
-    if (employee && (employee as any).shop_id) {
-      const { data: shopEmployees } = await supabase
-        .from('employees')
-        .select('id, role, employment_percentage')
-        .eq('shop_id', (employee as any).shop_id)
-        .neq('role', 'shop_manager')
+    // For managers, calculate based on YTD percentage from monthly_targets
+    const ytdPercentage = (target as any)?.shop_manager_ytd_percentage || 0
+    const percentageForBonus = Math.min(Math.max(ytdPercentage, 100), 200)
+    const percentagePoints = percentageForBonus - 100
 
-      if (shopEmployees && shopEmployees.length > 0) {
-        const { calculateShopGZER, calculateShopManagerBonus } = await import('@/lib/bonus-calculator')
-        
-        // Get ZERs for all shop employees
-        const employeeZERs = await Promise.all(
-          (shopEmployees as any[]).map(async (emp: any) => {
-            const { data: empSales } = await supabase
-              .from('sales')
-              .select('category')
-              .eq('employee_id', emp.id)
-              .eq('year', year)
-              .eq('month', month)
+    projectedBonus = Math.max(0, percentagePoints * 50)
 
-            const { data: empTarget } = await supabase
-              .from('monthly_targets')
-              .select('*')
-              .eq('employee_id', emp.id)
-              .eq('year', year)
-              .eq('month', month)
-              .single()
-
-            const empWirelessCount = (empSales as any)?.filter((s: any) => s.category === 'Wireless').length || 0
-            const empWirelineCount = (empSales as any)?.filter((s: any) => s.category === 'Wireline').length || 0
-
-            const { calculateEmployeeBonus } = await import('@/lib/bonus-calculator')
-            const empBonus = calculateEmployeeBonus({
-              role: emp.role,
-              wirelessCount: empWirelessCount,
-              wirelineCount: empWirelineCount,
-              wirelessTarget: (empTarget as any)?.wireless_target || 0,
-              wirelineTarget: (empTarget as any)?.wireline_target || 0,
-              employmentPercentage: emp.employment_percentage || 100,
-            })
-
-            return {
-              wirelessZER: empBonus.wirelessZER,
-              wirelineZER: empBonus.wirelineZER,
-            }
-          })
-        )
-
-        const shopGZER = calculateShopGZER(employeeZERs)
-        const managerBonus = calculateShopManagerBonus(shopGZER)
-        projectedBonus = managerBonus.bonusAmount
-        wirelessZER = shopGZER
-        wirelineZER = shopGZER
-      }
-    }
+    // Set ZER to YTD percentage for consistency
+    wirelessZER = ytdPercentage
+    wirelineZER = ytdPercentage
   }
 
   return {
