@@ -15,17 +15,121 @@ export interface Database {
           email: string
           name: string
           created_at: string
+          role: 'internal_sales' | 'external_sales' | 'shop_manager' | 'regional_manager'
+          employment_percentage: number
+          shop_id: string | null
+          region_id: string | null
         }
         Insert: {
           id: string
           email: string
           name: string
           created_at?: string
+          role?: 'internal_sales' | 'external_sales' | 'shop_manager' | 'regional_manager'
+          employment_percentage?: number
+          shop_id?: string | null
+          region_id?: string | null
         }
         Update: {
           id?: string
           email?: string
           name?: string
+          created_at?: string
+          role?: 'internal_sales' | 'external_sales' | 'shop_manager' | 'regional_manager'
+          employment_percentage?: number
+          shop_id?: string | null
+          region_id?: string | null
+        }
+      }
+      shops: {
+        Row: {
+          id: string
+          name: string
+          created_at: string
+          region_id: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          created_at?: string
+          region_id?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          created_at?: string
+          region_id?: string | null
+        }
+      }
+      regions: {
+        Row: {
+          id: string
+          name: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          created_at?: string
+        }
+      }
+      monthly_targets: {
+        Row: {
+          id: string
+          employee_id: string
+          year: number
+          month: number
+          wireless_target: number
+          wireline_target: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          employee_id: string
+          year: number
+          month: number
+          wireless_target: number
+          wireline_target: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          employee_id?: string
+          year?: number
+          month?: number
+          wireless_target?: number
+          wireline_target?: number
+          created_at?: string
+        }
+      }
+      sales: {
+        Row: {
+          id: string
+          employee_id: string
+          category: 'Wireless' | 'Wireline'
+          year: number
+          month: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          employee_id: string
+          category: 'Wireless' | 'Wireline'
+          year: number
+          month: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          employee_id?: string
+          category?: 'Wireless' | 'Wireline'
+          year?: number
+          month?: number
           created_at?: string
         }
       }
@@ -58,26 +162,6 @@ export interface Database {
           order?: number
         }
       }
-      sales: {
-        Row: {
-          id: string
-          employee_id: string
-          created_at: string
-          bonus_tier_id: number | null
-        }
-        Insert: {
-          id?: string
-          employee_id: string
-          created_at?: string
-          bonus_tier_id?: number | null
-        }
-        Update: {
-          id?: string
-          employee_id?: string
-          created_at?: string
-          bonus_tier_id?: number | null
-        }
-      }
     }
     Views: {
       [_ in never]: never
@@ -86,7 +170,8 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      employee_role: 'internal_sales' | 'external_sales' | 'shop_manager' | 'regional_manager'
+      sale_category: 'Wireless' | 'Wireline'
     }
   }
 }

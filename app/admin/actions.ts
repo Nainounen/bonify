@@ -15,6 +15,7 @@ export async function getAdminStats() {
     .eq('month', month)
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('Error fetching sales:', error)
     return { wireless: 0, wireline: 0, total: 0, salesByDate: [], salesByUserAndDate: [], avgZER: 0 }
   }
@@ -150,6 +151,7 @@ export async function getUsers() {
     .order('name')
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('Error fetching users:', error)
     return []
   }
