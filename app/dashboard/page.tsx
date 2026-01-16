@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getEmployeeStats } from './actions'
+import { getShopEmployees, getShopTargets } from './shop-manager-actions'
 import { DashboardView } from '@/components/dashboard-view'
 
 export default async function DashboardPage() {
@@ -30,5 +31,29 @@ export default async function DashboardPage() {
   // Type assertion after error check
   const stats = statsResult as any
 
-  return <DashboardView stats={stats} />
+  // Check for Regional Manager redirect
+  if (stats.employee.role === 'regional_manager') {
+    redirect('/region')
+  }
+
+  // Check for Director redirect
+  if (stats.employee.role === 'director') {
+    redirect('/director')
+  }
+
+  // Get shop management data if user is a shop manager
+  let shopData = null
+  if (stats.employee.role === 'shop_manager') {
+    const [employeesResult, targetsResult] = await Promise.all([
+      getShopEmployees(),
+      getShopTargets()
+    ])
+
+    shopData = {
+      employees: 'employees' in employeesResult ? (employeesResult.employees as any[]) : [],
+      targets: 'targets' in targetsResult ? (targetsResult.targets as any[]) : []
+    }
+  }
+
+  return <DashboardView stats={stats} shopData={shopData} />
 }

@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { getCurrentPeriod, calculateEmployeeBonus, calculateShopGZER } from '@/lib/bonus-calculator'
 
 export async function getAdminStats() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const { year, month } = getCurrentPeriod()
 
   const { data: sales, error } = await supabase
@@ -15,6 +15,7 @@ export async function getAdminStats() {
     .eq('month', month)
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('Error fetching sales:', error)
     return { wireless: 0, wireline: 0, total: 0, salesByDate: [], salesByUserAndDate: [], avgZER: 0 }
   }
@@ -142,7 +143,7 @@ export async function getAdminStats() {
 }
 
 export async function getUsers() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { data: users, error } = await supabase
     .from('employees')
@@ -150,6 +151,7 @@ export async function getUsers() {
     .order('name')
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error('Error fetching users:', error)
     return []
   }

@@ -1,17 +1,17 @@
 'use server'
 
+// Use admin client for employee lookup to avoid RLS recursion issues during login
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { getCurrentPeriod } from '@/lib/bonus-calculator'
 
 export async function logSale(category: 'Wireless' | 'Wireline') {
   const supabase = await createClient()
-
   const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
 
-  if (!user) {
-    return { error: 'Not authenticated' }
-  }
+  // Rest of the function...
+
 
   // Get current period
   const { year, month } = getCurrentPeriod()
@@ -53,6 +53,7 @@ export async function logSale(category: 'Wireless' | 'Wireline') {
 
 export async function getEmployeeStats() {
   const supabase = await createClient()
+  const adminClient = createAdminClient()
 
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -61,15 +62,18 @@ export async function getEmployeeStats() {
   }
 
   // Get employee info (create if doesn't exist)
-  let { data: employee } = await supabase
+  // Use adminClient to bypass potential RLS recursion on the employees table
+  let { data: employeeData } = await adminClient
     .from('employees')
     .select('*, shops(name)')
     .eq('id', user.id)
     .single()
 
+  let employee = employeeData as any
+
   // If employee doesn't exist, create it
   if (!employee) {
-    const { data: newEmployee, error: createError } = await supabase
+    const { data: newEmployee, error: createError } = await adminClient
       .from('employees')
       .insert({
         id: user.id,
@@ -82,6 +86,7 @@ export async function getEmployeeStats() {
       .single()
 
     if (createError) {
+      console.error('Failed to create employee:', createError)
       return { error: 'Failed to create employee record' }
     }
 
