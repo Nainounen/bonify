@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ShopManagementTab } from './shop-management-tab'
+import { DashboardSkeleton } from '@/components/loading-skeletons'
 
 type DashboardViewProps = {
   stats: any
@@ -33,17 +34,21 @@ export function DashboardView({ stats, shopData }: DashboardViewProps) {
   const [category, setCategory] = useState<'Wireline' | 'Wireless'>('Wireline')
   const [currentThemeId, setCurrentThemeId] = useState('default')
   const [isPending, startTransition] = useTransition()
+  const [mounted, setMounted] = useState(false)
 
   // Default tab based on role? Or just default to 'my-stats'
   const isManager = stats.employee.role === 'shop_manager'
 
   // Load theme from localStorage on mount
   useEffect(() => {
+    setMounted(true)
     const savedTheme = localStorage.getItem('bonify-theme')
     if (savedTheme && themes[savedTheme]) {
       setCurrentThemeId(savedTheme)
     }
   }, [])
+
+  if (!mounted) return <DashboardSkeleton />
 
   // Save theme to localStorage when changed
   const handleThemeChange = (themeId: string) => {

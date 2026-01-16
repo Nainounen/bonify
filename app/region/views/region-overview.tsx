@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { createShopAndManager, searchEmployees, createShopManager } from '../actions'
+import { createShopAndManager, searchEmployees, createShopManager, assignShopManager } from '../actions'
 import { toast } from 'sonner'
 import { Plus, Store, UserPlus, TrendingUp, Trophy, Palette, Check, LogOut, Search, AlertTriangle } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts'
@@ -134,21 +134,40 @@ export function RegionalOverview({ data, user }: { data: any, user: any }) {
   const handleCreateManager = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedShopId) return
+
     setLoading(true)
-    const res = await createShopManager({
-      name: managerName,
-      email: managerEmail,
-      password: managerPassword,
-      shopId: selectedShopId
-    })
+    let res;
+
+    if (managerMode === 'existing') {
+      if (!selectedEmployee) {
+        toast.error('Please select an employee')
+        setLoading(false)
+        return
+      }
+      res = await assignShopManager({
+        shopId: selectedShopId,
+        employeeId: selectedEmployee.id
+      })
+    } else {
+      res = await createShopManager({
+        name: managerName,
+        email: managerEmail,
+        password: managerPassword,
+        shopId: selectedShopId
+      })
+    }
+
     setLoading(false)
     if (res.error) toast.error(res.error)
     else {
-      toast.success('Manager created')
+      toast.success(managerMode === 'existing' ? 'Manager assigned' : 'Manager created')
       setIsCreateManagerOpen(false)
       setManagerName('')
       setManagerEmail('')
       setManagerPassword('')
+      setSearchQuery('')
+      setSelectedEmployee(null)
+      setManagerMode('existing')
     }
   }
 
@@ -215,7 +234,18 @@ export function RegionalOverview({ data, user }: { data: any, user: any }) {
             </h1>
             <p className={theme.text.secondary}>Overview for {new Date(data.year, data.month - 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</p>
           </div>
-          <Dialog open={isCreateShopOpen} onOpenChange={setIsCreateShopOpen}>
+          <Dialog open={isCreateShopOpen} onOpenChange={(open) => {
+            setIsCreateShopOpen(open)
+            if (!open) {
+              setNewShopName('')
+              setManagerMode('existing')
+              setManagerName('')
+              setManagerEmail('')
+              setManagerPassword('')
+              setSearchQuery('')
+              setSelectedEmployee(null)
+            }
+          }}>
             <DialogTrigger asChild>
               <Button className={`${theme.primary} text-white border-0`}>
                 <Plus className="mr-2 h-4 w-4" /> New Shop
@@ -445,19 +475,36 @@ export function RegionalOverview({ data, user }: { data: any, user: any }) {
                       <span className={`font-medium ${theme.text.primary}`}>{shop.wireless + shop.wireline}</span>
                     </div>
 
+                    {shop.manager && (
+                      <div className="flex justify-between text-sm items-center border-t border-white/5 pt-3 mt-1">
+                        <div className="flex flex-col">
+                          <span className={theme.text.secondary}>Manager</span>
+                          <span className={`font-medium ${theme.text.primary}`}>{shop.manager.name}</span>
+                        </div>
+                      </div>
+                    )}
+
                     <Dialog open={isCreateManagerOpen && selectedShopId === shop.id} onOpenChange={(open) => {
                       setIsCreateManagerOpen(open)
-                      if (!open) setSelectedShopId(null)
+                      if (!open) {
+                        setSelectedShopId(null)
+                        setManagerMode('existing')
+                        setManagerName('')
+                        setManagerEmail('')
+                        setManagerPassword('')
+                        setSearchQuery('')
+                        setSelectedEmployee(null)
+                      }
                     }}>
                       <DialogTrigger asChild>
                         <Button
-                          className={`w-full bg-white/5 hover:bg-white/10 border border-white/10 ${theme.text.primary}`}
+                          className={`w-full bg-white/5 hover:bg-white/10 border border-white/10 ${theme.text.primary} mt-2`}
                           onClick={() => {
                             setSelectedShopId(shop.id)
                             setIsCreateManagerOpen(true)
                           }}
                         >
-                          <UserPlus className="mr-2 h-4 w-4" /> Add Manager
+                          <UserPlus className="mr-2 h-4 w-4" /> {shop.manager ? 'Manage Manager' : 'Add Manager'}
                         </Button>
                       </DialogTrigger>
                       <DialogContent className={`backdrop-blur-xl border ${theme.card} ${theme.cardBorder} text-white`}>
@@ -465,36 +512,108 @@ export function RegionalOverview({ data, user }: { data: any, user: any }) {
                           <DialogTitle className={theme.text.primary}>Add Manager for {shop.name}</DialogTitle>
                         </DialogHeader>
                         <form onSubmit={handleCreateManager} className="space-y-4 pt-4">
-                          <div className="space-y-2">
-                            <Label className={theme.text.secondary}>Name</Label>
-                            <Input
-                              value={managerName}
-                              onChange={e => setManagerName(e.target.value)}
-                              className={`bg-white/5 border-white/10 text-white focus:border-${theme.accent} focus:ring-${theme.accent}`}
-                              required
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label className={theme.text.secondary}>Email</Label>
-                            <Input
-                              type="email"
-                              value={managerEmail}
-                              onChange={e => setManagerEmail(e.target.value)}
-                              className={`bg-white/5 border-white/10 text-white focus:border-${theme.accent} focus:ring-${theme.accent}`}
-                              required
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label className={theme.text.secondary}>Password</Label>
-                            <Input
-                              type="password"
-                              value={managerPassword}
-                              onChange={e => setManagerPassword(e.target.value)}
-                              className={`bg-white/5 border-white/10 text-white focus:border-${theme.accent} focus:ring-${theme.accent}`}
-                              required
-                            />
-                          </div>
-                          <Button type="submit" className={`w-full ${theme.primary} text-white`} disabled={loading}>Create Manager</Button>
+                          <Tabs value={managerMode} onValueChange={(v: any) => setManagerMode(v)} className="w-full">
+                            <TabsList className="bg-white/5 w-full">
+                              <TabsTrigger value="existing" className="w-1/2 data-[state=active]:bg-white/10 text-slate-400 data-[state=active]:text-white">Existing Employee</TabsTrigger>
+                              <TabsTrigger value="new" className="w-1/2 data-[state=active]:bg-white/10 text-slate-400 data-[state=active]:text-white">New User</TabsTrigger>
+                            </TabsList>
+
+                            <TabsContent value="existing" className="space-y-4 pt-4">
+                              <div className="space-y-2 relative">
+                                <Label className="text-xs text-slate-400">Search Employee</Label>
+                                <div className="relative">
+                                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-500" />
+                                  <Input
+                                    placeholder="Search by name..."
+                                    value={searchQuery}
+                                    onChange={e => setSearchQuery(e.target.value)}
+                                    className="pl-8 bg-white/5 border-white/10 text-white"
+                                  />
+                                </div>
+                                {searchResults.length > 0 && !selectedEmployee && (
+                                  <div className="absolute z-10 w-full mt-1 bg-slate-800 border border-slate-700 rounded-md shadow-lg max-h-60 overflow-auto">
+                                    {searchResults.map(emp => (
+                                      <div
+                                        key={emp.id}
+                                        className="p-2 hover:bg-slate-700 cursor-pointer text-sm"
+                                        onClick={() => {
+                                          setSelectedEmployee(emp)
+                                          setSearchQuery(emp.name)
+                                          setSearchResults([])
+                                        }}
+                                      >
+                                        <div className="font-medium text-white">{emp.name}</div>
+                                        <div className="text-xs text-slate-400">{emp.email} • {emp.role}</div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+
+                              {selectedEmployee && (
+                                <div className={`p-4 rounded-lg bg-white/5 border border-white/10 space-y-3`}>
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <div className="font-medium text-white">{selectedEmployee.name}</div>
+                                      <div className="text-sm text-slate-400">{selectedEmployee.email}</div>
+                                      <div className="text-xs text-slate-500 mt-1">Current Role: <span className="text-white capitalize">{selectedEmployee.role.replace('_', ' ')}</span></div>
+                                    </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => {
+                                        setSelectedEmployee(null)
+                                        setSearchQuery('')
+                                      }}
+                                      className="text-slate-400 hover:text-white"
+                                    >
+                                      Change
+                                    </Button>
+                                  </div>
+                                  <div className="flex items-center gap-2 p-2 rounded bg-indigo-500/10 text-indigo-200 text-xs border border-indigo-500/20">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    <span>This user will be promoted to Shop Manager</span>
+                                  </div>
+                                </div>
+                              )}
+                            </TabsContent>
+
+                            <TabsContent value="new" className="space-y-4 pt-4">
+                              <div className="space-y-2">
+                                <Label className={theme.text.secondary}>Name</Label>
+                                <Input
+                                  value={managerName}
+                                  onChange={e => setManagerName(e.target.value)}
+                                  className={`bg-white/5 border-white/10 text-white focus:border-${theme.accent} focus:ring-${theme.accent}`}
+                                  required={managerMode === 'new'}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label className={theme.text.secondary}>Email</Label>
+                                <Input
+                                  type="email"
+                                  value={managerEmail}
+                                  onChange={e => setManagerEmail(e.target.value)}
+                                  className={`bg-white/5 border-white/10 text-white focus:border-${theme.accent} focus:ring-${theme.accent}`}
+                                  required={managerMode === 'new'}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label className={theme.text.secondary}>Password</Label>
+                                <Input
+                                  type="password"
+                                  value={managerPassword}
+                                  onChange={e => setManagerPassword(e.target.value)}
+                                  className={`bg-white/5 border-white/10 text-white focus:border-${theme.accent} focus:ring-${theme.accent}`}
+                                  required={managerMode === 'new'}
+                                />
+                              </div>
+                            </TabsContent>
+                          </Tabs>
+
+                          <Button type="submit" className={`w-full ${theme.primary} text-white border-0 hover:opacity-90 mt-4`} disabled={loading}>
+                            {loading ? 'Processing...' : (managerMode === 'existing' ? 'Assign Manager' : 'Create Manager')}
+                          </Button>
                         </form>
                       </DialogContent>
                     </Dialog>

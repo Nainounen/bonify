@@ -46,15 +46,16 @@ export async function getRegionalOverview() {
     // Get employees for this shop
     const { data: employeesData } = await adminClient
       .from('employees')
-      .select('id')
+      .select('id, name, email, role')
       .eq('shop_id', shop.id)
 
     const employees = employeesData as any[]
 
     if (!employees || employees.length === 0) {
-      return { ...shop, wireless: 0, wireline: 0, revenue: 0, employees: 0 }
+      return { ...shop, wireless: 0, wireline: 0, revenue: 0, employees: 0, manager: null }
     }
 
+    const manager = employees.find(e => e.role === 'shop_manager') || null
     const employeeIds = employees.map(e => e.id)
 
     // Get stats for this month
@@ -72,7 +73,8 @@ export async function getRegionalOverview() {
       ...shop,
       wireless,
       wireline,
-      employees: employees.length
+      employees: employees.length,
+      manager
     }
   }))
 
@@ -259,6 +261,41 @@ export async function createShopManager(params: {
     .eq('id', authData.user.id)
 
   if (updateError) return { error: updateError.message }
+
+  revalidatePath('/region')
+  return { success: true }
+}
+
+export async function assignShopManager(params: {
+  shopId: string
+  employeeId: string
+}) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const adminClient = createAdminClient()
+
+  // Verify shop is in user's region (security check)
+  const { data: requestingUser } = await adminClient.from('employees').select('region_id').eq('id', user.id).single()
+  const requester = requestingUser as any
+
+  const { data: shopData } = await adminClient.from('shops').select('region_id').eq('id', params.shopId).single()
+  const shop = shopData as any
+
+  if (!shop || shop.region_id !== requester?.region_id) {
+    return { error: 'Unauthorized access to shop' }
+  }
+
+  // Update employee
+  const { error } = await (adminClient.from('employees') as any)
+    .update({
+      role: 'shop_manager',
+      shop_id: params.shopId
+    })
+    .eq('id', params.employeeId)
+
+  if (error) return { error: error.message }
 
   revalidatePath('/region')
   return { success: true }
