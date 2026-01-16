@@ -90,6 +90,118 @@ export async function getRegionalOverview() {
   }
 }
 
+export async function searchEmployees(query: string) {
+  const adminClient = createAdminClient()
+
+  // Search by name or email
+  const { data: byName } = await adminClient
+    .from('employees')
+    .select('id, name, email, role, shop_id, shops(name)')
+    .ilike('name', `%${query}%`)
+    .limit(5)
+
+  // If we want to search broadly we might need multiple queries or an 'or' filter
+  // Supabase .or() syntax: .or(`name.ilike.%${query}%,email.ilike.%${query}%`)
+
+  return byName || []
+}
+
+export async function createShopAndManager(data: {
+  shopName: string,
+  managerMode: 'new' | 'existing',
+  managerData: {
+    // For new
+    name?: string,
+    email?: string,
+    password?: string,
+    // For existing
+    id?: string
+  }
+}) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const adminClient = createAdminClient()
+
+  // 1. Get Region
+  const { data: employeeData } = await adminClient
+    .from('employees')
+    .select('region_id')
+    .eq('id', user.id)
+    .single()
+
+  const employee = employeeData as any
+  if (!employee?.region_id) return { error: 'No region found' }
+
+  // 2. Create Shop
+  const { data: shop, error: shopError } = await (adminClient
+    .from('shops') as any)
+    .insert({
+      name: data.shopName,
+      region_id: employee.region_id
+    })
+    .select()
+    .single()
+
+  if (shopError) return { error: shopError.message }
+  if (!shop) return { error: 'Failed to create shop' }
+
+  // 3. Handle Manager
+  if (data.managerMode === 'new') {
+    const { name, email, password } = data.managerData
+    if (!name || !email || !password) {
+      return { error: 'Missing manager details' }
+    }
+
+    // Create auth user
+    const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { name }
+    })
+
+    if (authError) {
+      // Cleanup shop if user creation fails
+      await adminClient.from('shops').delete().eq('id', shop.id)
+      return { error: `Failed to create user: ${authError.message}` }
+    }
+
+    // Update employee record
+    const { error: updateError } = await (adminClient.from('employees') as any)
+      .update({
+        name,
+        role: 'shop_manager',
+        shop_id: shop.id,
+        employment_percentage: 100
+      })
+      .eq('id', authData.user.id)
+
+    if (updateError) {
+      // Ideally clean up user too, but complex.
+      return { error: 'User created but failed to assign to shop' }
+    }
+
+  } else {
+    // Existing manager
+    const { id } = data.managerData
+    if (!id) return { error: 'No employee selected' }
+
+    const { error: updateError } = await (adminClient.from('employees') as any)
+      .update({
+        role: 'shop_manager', // Always promote/ensure role
+        shop_id: shop.id
+      })
+      .eq('id', id)
+
+    if (updateError) return { error: updateError.message }
+  }
+
+  revalidatePath('/region')
+  return { success: true }
+}
+
 export async function createShop(name: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

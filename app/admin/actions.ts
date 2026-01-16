@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { getCurrentPeriod, calculateEmployeeBonus, calculateShopGZER } from '@/lib/bonus-calculator'
 
 export async function getAdminStats() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const { year, month } = getCurrentPeriod()
 
   const { data: sales, error } = await supabase
@@ -143,7 +143,7 @@ export async function getAdminStats() {
 }
 
 export async function getUsers() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { data: users, error } = await supabase
     .from('employees')

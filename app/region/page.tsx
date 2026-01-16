@@ -15,7 +15,7 @@ export default async function RegionPage() {
   const adminClient = createAdminClient()
   const { data: employeeData } = await adminClient
     .from('employees')
-    .select('role')
+    .select('role, name, email')
     .eq('id', user.id)
     .single()
 
@@ -38,5 +38,5 @@ export default async function RegionPage() {
     )
   }
 
-  return <RegionalOverview data={overviewData} />
+  return <RegionalOverview data={overviewData} user={employee} />
 }

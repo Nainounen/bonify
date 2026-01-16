@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { getCurrentPeriod, calculateEmployeeBonus } from '@/lib/bonus-calculator'
 
 export type LeaderboardEntry = {
@@ -18,6 +18,7 @@ export type LeaderboardEntry = {
 
 export async function getLeaderboard() {
   const supabase = await createClient()
+  const adminClient = createAdminClient()
 
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -28,7 +29,7 @@ export async function getLeaderboard() {
   const { year, month } = getCurrentPeriod()
 
   // Fetch all employees with their current month sales, excluding admin and list users
-  const { data: employees, error: employeesError } = await supabase
+  const { data: employees, error: employeesError } = await adminClient
     .from('employees')
     .select('*')
     .neq('email', 'list@admin.com')
@@ -46,7 +47,7 @@ export async function getLeaderboard() {
   const leaderboard: LeaderboardEntry[] = await Promise.all(
     employees.map(async (emp: any) => {
       // Get employee's sales for current month
-      const { data: sales } = await supabase
+      const { data: sales } = await adminClient
         .from('sales')
         .select('category')
         .eq('employee_id', emp.id)
@@ -58,7 +59,7 @@ export async function getLeaderboard() {
       const totalSales = wirelessSales + wirelineSales
 
       // Get employee's target for current month
-      const { data: target } = await supabase
+      const { data: target } = await adminClient
         .from('monthly_targets')
         .select('*')
         .eq('employee_id', emp.id)
