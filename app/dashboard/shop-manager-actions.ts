@@ -31,7 +31,6 @@ export async function getShopEmployees() {
     .from('employees')
     .select('*, sales(id, category, created_at)')
     .eq('shop_id', manager.shop_id)
-    .neq('id', user.id)
     .order('name')
 
   return { employees: employees || [] }
@@ -93,6 +92,105 @@ export async function createShopEmployee(params: {
   return { success: true }
 }
 
+export async function addExistingShopEmployee(targetUserId: string, role: string = 'internal_sales', employmentPercentage: number = 100) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { error: 'Not authenticated' }
+
+  const adminClient = createAdminClient()
+
+  // Get manager's shop
+  const { data: managerData } = await adminClient
+    .from('employees')
+    .select('shop_id, role')
+    .eq('id', user.id)
+    .single()
+
+  const manager = managerData as any
+
+  if (!manager || manager.role !== 'shop_manager' || !manager.shop_id) {
+    return { error: 'Unauthorized' }
+  }
+
+  // Update target employee
+  const { error } = await (adminClient.from('employees') as any)
+    .update({
+      shop_id: manager.shop_id,
+      role: role,
+      employment_percentage: employmentPercentage
+    })
+    .eq('id', targetUserId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/dashboard')
+  return { success: true }
+}
+
+export async function searchEmployees(query: string) {
+  const adminClient = createAdminClient()
+
+  const { data } = await adminClient
+    .from('employees')
+    .select('id, name, email, role, shop_id, shops(name)')
+    .ilike('name', `%${query}%`)
+    .limit(5)
+
+  return data || []
+}
+
+export async function updateShopEmployee(params: {
+  id: string
+  role: string
+  employmentPercentage: number
+}) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { error: 'Not authenticated' }
+
+  const adminClient = createAdminClient()
+
+  // Verify manager
+  const { data: managerData } = await adminClient
+    .from('employees')
+    .select('shop_id, role')
+    .eq('id', user.id)
+    .single()
+
+  const manager = managerData as any
+
+  if (!manager || manager.role !== 'shop_manager' || !manager.shop_id) {
+    return { error: 'Unauthorized' }
+  }
+
+  // Verify target employee belongs to this shop
+  const { data: targetEmpData } = await adminClient
+    .from('employees')
+    .select('shop_id')
+    .eq('id', params.id)
+    .single()
+
+  const targetEmp = targetEmpData as any
+
+  if (targetEmp?.shop_id !== manager.shop_id) {
+    return { error: 'Employee not in your shop' }
+  }
+
+  const { error } = await (adminClient.from('employees') as any)
+    .update({
+      role: params.role,
+      employment_percentage: params.employmentPercentage
+    })
+    .eq('id', params.id)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/dashboard')
+  return { success: true }
+}
+
 export async function deleteShopEmployee(targetUserId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -146,6 +244,7 @@ export async function setShopEmployeeTarget(params: {
   employeeId: string
   wirelessTarget: number
   wirelineTarget: number
+  shopManagerYtdPercentage?: number
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -168,7 +267,7 @@ export async function setShopEmployeeTarget(params: {
   // Verify target user belongs to same shop
   const { data: targetUserData } = await adminClient
     .from('employees')
-    .select('shop_id')
+    .select('shop_id, role')
     .eq('id', params.employeeId)
     .single()
 
@@ -180,16 +279,23 @@ export async function setShopEmployeeTarget(params: {
 
   const { year, month } = getCurrentPeriod()
 
+  const payload: any = {
+    employee_id: params.employeeId,
+    year,
+    month,
+    wireless_target: params.wirelessTarget,
+    wireline_target: params.wirelineTarget
+  }
+
+  // Only allow setting YTD percentage if the target user is a shop manager
+  if (targetUser.role === 'shop_manager' && params.shopManagerYtdPercentage !== undefined) {
+    payload.shop_manager_ytd_percentage = params.shopManagerYtdPercentage
+  }
+
   // Upsert target
   const { error } = await (adminClient
     .from('monthly_targets') as any)
-    .upsert({
-      employee_id: params.employeeId,
-      year,
-      month,
-      wireless_target: params.wirelessTarget,
-      wireline_target: params.wirelineTarget
-    }, { onConflict: 'employee_id, year, month' })
+    .upsert(payload, { onConflict: 'employee_id, year, month' })
 
   if (error) return { error: error.message }
 

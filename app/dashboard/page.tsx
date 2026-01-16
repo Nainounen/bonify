@@ -36,6 +36,11 @@ export default async function DashboardPage() {
     redirect('/region')
   }
 
+  // Check for Director redirect
+  if (stats.employee.role === 'director') {
+    redirect('/director')
+  }
+
   // Get shop management data if user is a shop manager
   let shopData = null
   if (stats.employee.role === 'shop_manager') {

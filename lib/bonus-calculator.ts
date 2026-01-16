@@ -3,7 +3,7 @@
  * Implements the Top Seller Incentive bonus logic based on ZER (Zielerreichung/Target Achievement)
  */
 
-export type EmployeeRole = 'internal_sales' | 'external_sales' | 'shop_manager' | 'regional_manager'
+export type EmployeeRole = 'internal_sales' | 'external_sales' | 'shop_manager' | 'regional_manager' | 'director'
 
 export type BonusRates = {
   wireless_level1: number // CHF per order (100-120% ZER)
@@ -37,6 +37,13 @@ export const BONUS_RATES: Record<EmployeeRole, BonusRates> = {
     monthly_cap: 0, // Managers have different logic
   },
   regional_manager: {
+    wireless_level1: 0,
+    wireless_level2: 0,
+    wireline_level1: 0,
+    wireline_level2: 0,
+    monthly_cap: 0,
+  },
+  director: {
     wireless_level1: 0,
     wireless_level2: 0,
     wireline_level1: 0,
