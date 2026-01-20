@@ -2,6 +2,7 @@
 
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { getCurrentPeriod, calculateEmployeeBonus } from '@/lib/bonus-calculator'
 
 // --- Director Actions ---
 
@@ -26,6 +27,8 @@ export async function getRegionsWithStats() {
   if (employeeRole !== 'director' && user.email !== 'admin@admin.com') {
     // return { error: 'Unauthorized' } // Allow admin@admin.com as fallback for now
   }
+
+  const { year, month } = getCurrentPeriod()
 
   // 1. Get all regions
   const { data: regionsData } = await adminClient
@@ -54,24 +57,83 @@ export async function getRegionsWithStats() {
 
     const shopIds = shops?.map((s: any) => s.id) || []
 
-    // Get Sales count for this region (via shops)
     let salesCount = 0
+    let topSellersCount = 0
+    let totalBonusAmount = 0
 
     if (shopIds.length > 0) {
-      // 1. Get Employee IDs
-      const { data: empIds } = await adminClient
+      // 1. Get Employee IDs in shops
+      const { data: employees } = await adminClient
         .from('employees')
-        .select('id')
+        .select('id, role, employment_percentage')
         .in('shop_id', shopIds)
 
-      const ids = empIds?.map((e: any) => e.id) || []
+      const ids = employees?.map((e: any) => e.id) || []
 
       if (ids.length > 0) {
-        const { count: sCount } = await adminClient
+        // Get Sales
+        const { data: allSales } = await adminClient
           .from('sales')
-          .select('*', { count: 'exact', head: true })
+          .select('category, employee_id')
           .in('employee_id', ids)
-        salesCount = sCount || 0
+          .eq('year', year)
+          .eq('month', month)
+
+        salesCount = allSales?.length || 0
+
+        // Get Targets
+        const { data: targets } = await adminClient
+          .from('monthly_targets')
+          .select('employee_id, wireless_target, wireline_target, shop_manager_ytd_percentage')
+          .in('employee_id', ids)
+          .eq('year', year)
+          .eq('month', month)
+
+        const targetsMap = new Map(targets?.map((t: any) => [t.employee_id, t]) || [])
+
+        // Calculate Bonuses & Top Sellers
+        employees?.forEach((emp: any) => {
+          if (emp.role === 'regional_manager' || emp.role === 'director') return
+
+          const empSales = allSales?.filter((s: any) => s.employee_id === emp.id) || []
+          const empTarget = targetsMap.get(emp.id)
+          const wirelessCount = empSales.filter((s: any) => s.category === 'Wireless').length
+          const wirelineCount = empSales.filter((s: any) => s.category === 'Wireline').length
+          const wirelessTarget = (empTarget as any)?.wireless_target || 0
+          const wirelineTarget = (empTarget as any)?.wireline_target || 0
+
+          let bonus = 0
+          let isTopSeller = false
+
+          if (emp.role === 'shop_manager') {
+            // Manager Bonus Logic: Based on monthly_targets YTD percentage
+            const ytdPercentage = (empTarget as any)?.shop_manager_ytd_percentage || 0
+            if (ytdPercentage > 100) {
+              isTopSeller = true
+              const percentagePoints = Math.min(ytdPercentage, 200) - 100
+              bonus = percentagePoints * 50
+            }
+          } else {
+            // Sales Role Bonus Logic
+            const calc = calculateEmployeeBonus({
+              role: emp.role,
+              wirelessCount,
+              wirelineCount,
+              wirelessTarget,
+              wirelineTarget,
+              employmentPercentage: emp.employment_percentage || 100
+            })
+
+            bonus = calc.cappedBonus
+            // Top Seller if ZER > 100% in either category (simple definition)
+            if (calc.wirelessZER > 100 || calc.wirelineZER > 100) {
+              isTopSeller = true
+            }
+          }
+
+          if (isTopSeller) topSellersCount++
+          totalBonusAmount += bonus
+        })
       }
     }
 
@@ -79,7 +141,9 @@ export async function getRegionsWithStats() {
       ...region,
       manager,
       salesCount,
-      shopCount: shopIds.length
+      shopCount: shopIds.length,
+      topSellersCount,
+      totalBonusAmount
     }
   }))
 

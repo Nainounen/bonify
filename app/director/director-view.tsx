@@ -219,11 +219,13 @@ export function DirectorView({ initialRegions, stats, user }: DirectorViewProps)
   }
 
   // Chart Data
-  const chartData = regions.map(r => ({
+  const chartData = regions.map((r: any) => ({
     name: r.name,
     sales: r.salesCount,
-    shops: r.shopCount
-  })).sort((a, b) => b.sales - a.sales)
+    shops: r.shopCount,
+    topSellers: r.topSellersCount || 0,
+    totalBonus: r.totalBonusAmount || 0
+  })).sort((a: any, b: any) => b.sales - a.sales)
 
   return (
     <div className={`min-h-screen ${theme.background} ${theme.text.primary} p-6`}>
@@ -341,7 +343,7 @@ export function DirectorView({ initialRegions, stats, user }: DirectorViewProps)
                           cursor={{ fill: 'rgba(255,255,255,0.1)' }}
                         />
                         <Bar dataKey="sales" fill="#6366f1" radius={[4, 4, 0, 0]}>
-                          {chartData.map((entry, index) => (
+                          {chartData.map((entry: any, index: number) => (
                             <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#6366f1' : '#8b5cf6'} />
                           ))}
                         </Bar>
@@ -354,6 +356,52 @@ export function DirectorView({ initialRegions, stats, user }: DirectorViewProps)
                   )}
                 </CardContent>
               </Card>
+
+              {/* Top Sellers Chart */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <Card className={`${theme.card} border ${theme.cardBorder}`}>
+                  <CardHeader>
+                    <CardTitle>Top Sellers by Region</CardTitle>
+                    <CardDescription>Number of employees exceeding targets (&gt;100% ZER)</CardDescription>
+                  </CardHeader>
+                  <CardContent className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                        <XAxis dataKey="name" stroke="#94a3b8" />
+                        <YAxis stroke="#94a3b8" allowDecimals={false} />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#fff' }}
+                          cursor={{ fill: 'rgba(255,255,255,0.1)' }}
+                        />
+                        <Bar dataKey="topSellers" name="Top Sellers" fill="#10b981" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                <Card className={`${theme.card} border ${theme.cardBorder}`}>
+                  <CardHeader>
+                    <CardTitle>Total Bonus by Region</CardTitle>
+                    <CardDescription>Total bonus payout amount (CHF)</CardDescription>
+                  </CardHeader>
+                  <CardContent className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                        <XAxis dataKey="name" stroke="#94a3b8" />
+                        <YAxis stroke="#94a3b8" tickFormatter={(value) => `CHF ${value}`} />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#fff' }}
+                          cursor={{ fill: 'rgba(255,255,255,0.1)' }}
+                          formatter={(value: any) => [`CHF ${Number(value).toFixed(2)}`, 'Total Bonus']}
+                        />
+                        <Bar dataKey="totalBonus" name="Total Bonus" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
 
             <TabsContent value="regions">
@@ -515,7 +563,7 @@ export function DirectorView({ initialRegions, stats, user }: DirectorViewProps)
                                 </div>
                               </div>
                               <Button size="icon" variant="ghost" onClick={() => handleAssignClick(region)}>
-                                <Edit2Icon className="h-4 w-4 text-slate-400" />
+                                <UserPlus className="h-4 w-4 text-slate-400" />
                               </Button>
                             </div>
                           ) : (
