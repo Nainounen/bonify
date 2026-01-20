@@ -26,6 +26,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import { useRouter } from 'next/navigation'
+import { DateFilter } from '@/components/date-filter'
 
 export function RegionalOverview({ data, user }: { data: any, user: any }) {
   const router = useRouter()
@@ -236,7 +237,8 @@ export function RegionalOverview({ data, user }: { data: any, user: any }) {
             <h1 className={`text-3xl font-bold ${theme.text.primary}`}>
               {data.regionName} Region
             </h1>
-            <p className={theme.text.secondary}>Overview for {new Date(data.year, data.month - 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</p>
+            <p className={`${theme.text.secondary} mb-2`}>Overview for {new Date(data.year, data.month - 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</p>
+            <DateFilter className="bg-white/10 border-white/20 text-white" />
           </div>
           <Dialog open={isCreateShopOpen} onOpenChange={(open) => {
             setIsCreateShopOpen(open)

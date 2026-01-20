@@ -6,7 +6,7 @@ import { getCurrentPeriod, calculateEmployeeBonus } from '@/lib/bonus-calculator
 
 // --- Director Actions ---
 
-export async function getRegionsWithStats() {
+export async function getRegionsWithStats(year?: number, month?: number) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -28,7 +28,9 @@ export async function getRegionsWithStats() {
     // return { error: 'Unauthorized' } // Allow admin@admin.com as fallback for now
   }
 
-  const { year, month } = getCurrentPeriod()
+  const current = getCurrentPeriod()
+  const targetYear = year || current.year
+  const targetMonth = month || current.month
 
   // 1. Get all regions
   const { data: regionsData } = await adminClient
@@ -76,8 +78,10 @@ export async function getRegionsWithStats() {
           .from('sales')
           .select('category, employee_id')
           .in('employee_id', ids)
-          .eq('year', year)
-          .eq('month', month)
+          .eq('year', targetYear)
+          .eq('month', targetMonth)
+          .eq('year', targetYear)
+          .eq('month', targetMonth)
 
         salesCount = allSales?.length || 0
 
@@ -86,8 +90,8 @@ export async function getRegionsWithStats() {
           .from('monthly_targets')
           .select('employee_id, wireless_target, wireline_target, shop_manager_ytd_percentage')
           .in('employee_id', ids)
-          .eq('year', year)
-          .eq('month', month)
+          .eq('year', targetYear)
+          .eq('month', targetMonth)
 
         const targetsMap = new Map(targets?.map((t: any) => [t.employee_id, t]) || [])
 

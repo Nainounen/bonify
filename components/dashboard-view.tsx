@@ -21,6 +21,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ShopManagementTab } from './shop-management-tab'
 import { DashboardSkeleton } from '@/components/loading-skeletons'
+import { DateFilter } from './date-filter'
 
 type DashboardViewProps = {
   stats: any
@@ -92,11 +93,14 @@ export function DashboardView({ stats, shopData }: DashboardViewProps) {
           {/* Hero Stats Section */}
           <div className="py-6 sm:py-8 text-center">
             {/* Current Month Indicator */}
-            <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full backdrop-blur-sm mb-4 sm:mb-6 ${theme.glass}`}>
-              <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-400" />
-              <span className={`text-xs sm:text-sm font-medium ${theme.text.primary}`}>
-                {new Date(stats.year, stats.month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-              </span>
+            <div className="flex flex-col items-center gap-4 mb-4 sm:mb-6">
+              <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full backdrop-blur-sm ${theme.glass}`}>
+                <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-400" />
+                <span className={`text-xs sm:text-sm font-medium ${theme.text.primary}`}>
+                  {new Date(stats.year, stats.month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                </span>
+              </div>
+              <DateFilter className="bg-white/10 border-white/20 text-white" />
             </div>
 
             {/* ZER Display */}

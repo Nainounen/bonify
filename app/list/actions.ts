@@ -16,7 +16,7 @@ export type LeaderboardEntry = {
   projectedBonus: number
 }
 
-export async function getLeaderboard() {
+export async function getLeaderboard(year?: number, month?: number) {
   const supabase = await createClient()
   const adminClient = createAdminClient()
 
@@ -26,7 +26,9 @@ export async function getLeaderboard() {
     return { error: 'Not authenticated' }
   }
 
-  const { year, month } = getCurrentPeriod()
+  const current = getCurrentPeriod()
+  const targetYear = year || current.year
+  const targetMonth = month || current.month
 
   // Fetch all employees with their current month sales, excluding admin and list users
   const { data: employees, error: employeesError } = await adminClient
@@ -51,8 +53,8 @@ export async function getLeaderboard() {
         .from('sales')
         .select('category')
         .eq('employee_id', emp.id)
-        .eq('year', year)
-        .eq('month', month)
+        .eq('year', targetYear)
+        .eq('month', targetMonth)
 
       const wirelessSales = sales?.filter((s: any) => s.category === 'Wireless').length || 0
       const wirelineSales = sales?.filter((s: any) => s.category === 'Wireline').length || 0
@@ -63,8 +65,8 @@ export async function getLeaderboard() {
         .from('monthly_targets')
         .select('*')
         .eq('employee_id', emp.id)
-        .eq('year', year)
-        .eq('month', month)
+        .eq('year', targetYear)
+        .eq('month', targetMonth)
         .single()
 
       let wirelessZER = 0

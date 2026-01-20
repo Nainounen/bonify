@@ -19,6 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { DateFilter } from '@/components/date-filter'
 import { useRouter } from 'next/navigation'
 
 type DirectorViewProps = {
@@ -237,6 +238,7 @@ export function DirectorView({ initialRegions, stats, user }: DirectorViewProps)
             <p className={`${theme.text.secondary}`}>Overview of all Regions and Performance</p>
           </div>
           <div className="flex items-center gap-2">
+            <DateFilter />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button suppressHydrationWarning variant="ghost" size="icon" className={`${theme.glass} border ${theme.glassBorder} ${theme.text.primary} hover:opacity-80 transition-all`}>

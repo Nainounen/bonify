@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { DateFilter } from '@/components/date-filter'
 
 type ListViewProps = {
   user: any
@@ -77,6 +78,7 @@ export function ListView({ user, leaderboard }: ListViewProps) {
             </div>
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
+            <DateFilter />
             <Button
               variant="ghost"
               size="icon"
@@ -134,8 +136,8 @@ export function ListView({ user, leaderboard }: ListViewProps) {
             <button
               onClick={() => setView('all')}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${view === 'all'
-                  ? `${theme.primary} text-white shadow-lg`
-                  : `${theme.text.muted} hover:${theme.text.primary}`
+                ? `${theme.primary} text-white shadow-lg`
+                : `${theme.text.muted} hover:${theme.text.primary}`
                 }`}
             >
               All
@@ -143,8 +145,8 @@ export function ListView({ user, leaderboard }: ListViewProps) {
             <button
               onClick={() => setView('wireless')}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${view === 'wireless'
-                  ? `${theme.primary} text-white shadow-lg`
-                  : `${theme.text.muted} hover:${theme.text.primary}`
+                ? `${theme.primary} text-white shadow-lg`
+                : `${theme.text.muted} hover:${theme.text.primary}`
                 }`}
             >
               Wireless
@@ -152,8 +154,8 @@ export function ListView({ user, leaderboard }: ListViewProps) {
             <button
               onClick={() => setView('wireline')}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${view === 'wireline'
-                  ? `${theme.primary} text-white shadow-lg`
-                  : `${theme.text.muted} hover:${theme.text.primary}`
+                ? `${theme.primary} text-white shadow-lg`
+                : `${theme.text.muted} hover:${theme.text.primary}`
                 }`}
             >
               Wireline

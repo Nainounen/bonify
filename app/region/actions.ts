@@ -7,7 +7,7 @@ import { getCurrentPeriod } from '@/lib/bonus-calculator'
 
 // --- Regional Manager Actions ---
 
-export async function getRegionalOverview() {
+export async function getRegionalOverview(year?: number, month?: number) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -28,7 +28,9 @@ export async function getRegionalOverview() {
   if (!employee || !employee.region_id) return { error: 'No region assigned' }
 
   const regionId = employee.region_id
-  const { year, month } = getCurrentPeriod()
+  const current = getCurrentPeriod()
+  const targetYear = year || current.year
+  const targetMonth = month || current.month
 
   // Get all shops in region - use adminClient here too to ensure visibility
   const { data: shopsData } = await adminClient
@@ -63,8 +65,8 @@ export async function getRegionalOverview() {
       .from('sales')
       .select('category')
       .in('employee_id', employeeIds)
-      .eq('year', year)
-      .eq('month', month)
+      .eq('year', targetYear)
+      .eq('month', targetMonth)
 
     const wireless = sales?.filter((s: any) => s.category === 'Wireless').length || 0
     const wireline = sales?.filter((s: any) => s.category === 'Wireline').length || 0
@@ -78,8 +80,8 @@ export async function getRegionalOverview() {
         .from('monthly_targets')
         .select('shop_manager_ytd_percentage')
         .eq('employee_id', manager.id)
-        .eq('year', year)
-        .eq('month', month)
+        .eq('year', targetYear)
+        .eq('month', targetMonth)
         .single()
 
       if (target) {
@@ -110,8 +112,8 @@ export async function getRegionalOverview() {
     shops: shopsWithStats,
     totalWireless,
     totalWireline,
-    year,
-    month
+    year: targetYear,
+    month: targetMonth
   }
 }
 
