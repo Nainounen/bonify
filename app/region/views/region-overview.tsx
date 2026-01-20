@@ -25,8 +25,10 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
+import { useRouter } from 'next/navigation'
 
 export function RegionalOverview({ data, user }: { data: any, user: any }) {
+  const router = useRouter()
   const [isCreateShopOpen, setIsCreateShopOpen] = useState(false)
   const [isCreateManagerOpen, setIsCreateManagerOpen] = useState(false)
   const [selectedShopId, setSelectedShopId] = useState<string | null>(null)
@@ -119,6 +121,7 @@ export function RegionalOverview({ data, user }: { data: any, user: any }) {
     if (res.error) toast.error(res.error)
     else {
       toast.success('Shop created and manager assigned')
+      router.refresh()
       setIsCreateShopOpen(false)
       // Reset form
       setNewShopName('')
@@ -161,6 +164,7 @@ export function RegionalOverview({ data, user }: { data: any, user: any }) {
     if (res.error) toast.error(res.error)
     else {
       toast.success(managerMode === 'existing' ? 'Manager assigned' : 'Manager created')
+      router.refresh()
       setIsCreateManagerOpen(false)
       setManagerName('')
       setManagerEmail('')

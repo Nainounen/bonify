@@ -104,10 +104,10 @@ export function DashboardView({ stats, shopData }: DashboardViewProps) {
               stats.employee.role === 'shop_manager' ? (
                 <div className="mb-5 sm:mb-6">
                   <div className={`text-5xl sm:text-6xl md:text-7xl font-bold ${currentColor.text} mb-2 transition-colors duration-500`}>
-                    {formatCurrency(stats.projectedBonus)}
+                    {stats.wirelessZER > 100 ? formatCurrency(stats.projectedBonus) : `${stats.wirelessZER.toFixed(0)}%`}
                   </div>
                   <p className={`${theme.text.secondary} text-xs sm:text-sm uppercase tracking-wider transition-colors duration-500`}>
-                    YTD Bonus (CHF)
+                    {stats.wirelessZER > 100 ? 'YTD Bonus (CHF)' : 'YTD Achievement (%)'}
                   </p>
                 </div>
               ) : (

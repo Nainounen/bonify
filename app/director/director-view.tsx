@@ -19,6 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useRouter } from 'next/navigation'
 
 type DirectorViewProps = {
   initialRegions: any[]
@@ -27,7 +28,10 @@ type DirectorViewProps = {
 }
 
 export function DirectorView({ initialRegions, stats, user }: DirectorViewProps) {
-  const [regions, setRegions] = useState(initialRegions)
+  const router = useRouter()
+  // Use initialRegions directly to ensure updates from router.refresh() are reflected
+  const regions = initialRegions
+
   const [newRegionName, setNewRegionName] = useState('')
   const [isAddRegionOpen, setIsAddRegionOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -139,6 +143,7 @@ export function DirectorView({ initialRegions, stats, user }: DirectorViewProps)
       toast.error(res.error)
     } else {
       toast.success(res.partial ? 'Region created (Manager issue)' : 'Region created with Manager')
+      router.refresh()
       setIsAddRegionOpen(false)
       setNewRegionName('')
       setCrSelectedManager(null)
