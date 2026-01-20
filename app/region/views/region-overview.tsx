@@ -481,6 +481,14 @@ export function RegionalOverview({ data, user }: { data: any, user: any }) {
                           <span className={theme.text.secondary}>Manager</span>
                           <span className={`font-medium ${theme.text.primary}`}>{shop.manager.name}</span>
                         </div>
+                        <div className="flex flex-col items-end">
+                          <div className={`font-medium ${theme.text.primary}`}>
+                            {shop.ytdPercentage?.toFixed(0) || 0}%
+                            <span className="mx-1 text-slate-600">|</span>
+                            Fr. {shop.ytdBonus?.toFixed(0) || 0}
+                          </div>
+                          <span className={`text-xs ${theme.text.secondary}`}>YTD Performance</span>
+                        </div>
                       </div>
                     )}
 

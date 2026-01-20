@@ -69,12 +69,35 @@ export async function getRegionalOverview() {
     const wireless = sales?.filter((s: any) => s.category === 'Wireless').length || 0
     const wireline = sales?.filter((s: any) => s.category === 'Wireline').length || 0
 
+    // Get Shop Manager YTD stats
+    let ytdPercentage = 0
+    let ytdBonus = 0
+
+    if (manager) {
+      const { data: target } = await adminClient
+        .from('monthly_targets')
+        .select('shop_manager_ytd_percentage')
+        .eq('employee_id', manager.id)
+        .eq('year', year)
+        .eq('month', month)
+        .single()
+
+      if (target) {
+        ytdPercentage = (target as any).shop_manager_ytd_percentage || 0
+        const percentageForBonus = Math.min(Math.max(ytdPercentage, 100), 200)
+        const percentagePoints = percentageForBonus - 100
+        ytdBonus = Math.max(0, percentagePoints * 50)
+      }
+    }
+
     return {
       ...shop,
       wireless,
       wireline,
       employees: employees.length,
-      manager
+      manager,
+      ytdPercentage,
+      ytdBonus
     }
   }))
 
