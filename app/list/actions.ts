@@ -30,12 +30,38 @@ export async function getLeaderboard(year?: number, month?: number) {
   const targetYear = year || current.year
   const targetMonth = month || current.month
 
-  // Fetch all employees with their current month sales, excluding admin and list users
-  const { data: employees, error: employeesError } = await adminClient
+  // Get current user info to determine visibility
+  const { data: employeeData } = await adminClient
+    .from('employees')
+    .select('role, shop_id')
+    .eq('id', user.id)
+    .single()
+
+  const currentUserEmployee = employeeData as any
+
+  let query = adminClient
     .from('employees')
     .select('*')
     .neq('email', 'list@admin.com')
     .neq('email', 'admin@admin.com')
+
+  // Filter based on role
+  // Regular employees and shop managers only see their own shop
+  // Regional Managers and Directors see everyone
+  const isPrivileged = currentUserEmployee && ['regional_manager', 'director'].includes(currentUserEmployee.role)
+  const isAdmin = user.email === 'admin@admin.com'
+
+  if (!isPrivileged && !isAdmin) {
+    if (currentUserEmployee?.shop_id) {
+      query = query.eq('shop_id', currentUserEmployee.shop_id)
+    } else {
+      // If no shop assigned, limit to self
+      query = query.eq('id', user.id)
+    }
+  }
+
+  // Fetch employees based on filter
+  const { data: employees, error: employeesError } = await query
 
   if (employeesError) {
     return { error: employeesError.message }

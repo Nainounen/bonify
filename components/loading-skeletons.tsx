@@ -1,18 +1,19 @@
 'use client'
 
 import { Skeleton } from '@/components/ui/skeleton'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { themes, getTheme } from '@/lib/themes'
 
-// Read theme synchronously from localStorage to avoid flash
-const getInitialTheme = () => {
-  if (typeof window === 'undefined') return 'default'
-  const saved = localStorage.getItem('bonify-theme')
-  return (saved && themes[saved]) ? saved : 'default'
-}
-
 export function DashboardSkeleton() {
-  const [themeId] = useState(getInitialTheme)
+  const [themeId, setThemeId] = useState('default')
+
+  useEffect(() => {
+    const saved = localStorage.getItem('bonify-theme')
+    if (saved && themes[saved]) {
+      setThemeId(saved)
+    }
+  }, [])
+
   const theme = getTheme(themeId).variants.Internet
 
   return (
@@ -30,52 +31,52 @@ export function DashboardSkeleton() {
 
       <div className="w-full pb-20">
         <div className="container mx-auto max-w-7xl px-4 lg:grid lg:grid-cols-12 lg:gap-8">
-        {/* Main Content */}
-        <div className="mx-auto max-w-2xl lg:max-w-none lg:col-span-8 lg:col-start-2 xl:col-span-8 xl:col-start-2">
-        {/* Hero Stats Section */}
-        <div className="py-8 text-center">
-          <Skeleton className={`h-8 w-48 mx-auto mb-6 ${theme.card}`} />
-          <Skeleton className={`h-16 w-32 mx-auto mb-2 ${theme.card}`} />
-          <Skeleton className={`h-4 w-24 mx-auto mb-8 ${theme.card}`} />
+          {/* Main Content */}
+          <div className="mx-auto max-w-2xl lg:max-w-none lg:col-span-8 lg:col-start-2 xl:col-span-8 xl:col-start-2">
+            {/* Hero Stats Section */}
+            <div className="py-8 text-center">
+              <Skeleton className={`h-8 w-48 mx-auto mb-6 ${theme.card}`} />
+              <Skeleton className={`h-16 w-32 mx-auto mb-2 ${theme.card}`} />
+              <Skeleton className={`h-4 w-24 mx-auto mb-8 ${theme.card}`} />
 
-          <div className="flex items-center justify-center gap-6 mb-8">
-            <div className="text-center">
-              <Skeleton className={`h-8 w-24 mx-auto mb-1 ${theme.card}`} />
-              <Skeleton className={`h-3 w-16 mx-auto ${theme.card}`} />
+              <div className="flex items-center justify-center gap-6 mb-8">
+                <div className="text-center">
+                  <Skeleton className={`h-8 w-24 mx-auto mb-1 ${theme.card}`} />
+                  <Skeleton className={`h-3 w-16 mx-auto ${theme.card}`} />
+                </div>
+                <div className={`h-12 w-px ${theme.divider}`}></div>
+                <div className="text-center">
+                  <Skeleton className={`h-8 w-24 mx-auto mb-1 ${theme.card}`} />
+                  <Skeleton className={`h-3 w-16 mx-auto ${theme.card}`} />
+                </div>
+              </div>
             </div>
-            <div className={`h-12 w-px ${theme.divider}`}></div>
-            <div className="text-center">
-              <Skeleton className={`h-8 w-24 mx-auto mb-1 ${theme.card}`} />
-              <Skeleton className={`h-3 w-16 mx-auto ${theme.card}`} />
+
+            {/* Counter Button */}
+            <div className="flex flex-col items-center justify-center mb-12">
+              <Skeleton className={`h-4 w-32 mb-6 ${theme.card}`} />
+              <Skeleton className={`h-32 w-32 rounded-full ${theme.card}`} />
+            </div>
+
+            {/* Progress Card */}
+            <Skeleton className={`h-48 w-full rounded-3xl ${theme.card} mb-12`} />
+
+            {/* Tiers List */}
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Skeleton key={i} className={`h-24 w-full rounded-2xl ${theme.card}`} />
+              ))}
             </div>
           </div>
-        </div>
+          {/* End Main Content */}
 
-        {/* Counter Button */}
-        <div className="flex flex-col items-center justify-center mb-12">
-          <Skeleton className={`h-4 w-32 mb-6 ${theme.card}`} />
-          <Skeleton className={`h-32 w-32 rounded-full ${theme.card}`} />
-        </div>
-
-        {/* Progress Card */}
-        <Skeleton className={`h-48 w-full rounded-3xl ${theme.card} mb-12`} />
-
-        {/* Tiers List */}
-        <div className="space-y-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Skeleton key={i} className={`h-24 w-full rounded-2xl ${theme.card}`} />
-          ))}
-        </div>
-        </div>
-        {/* End Main Content */}
-
-        {/* Desktop-only Side Panel Skeleton */}
-        <div className="hidden lg:block lg:col-span-3 lg:col-start-10 xl:col-span-3 xl:col-start-10">
-          <div className="sticky top-24 space-y-4">
-            <Skeleton className={`h-48 w-full rounded-3xl ${theme.card}`} />
-            <Skeleton className={`h-96 w-full rounded-3xl ${theme.card}`} />
+          {/* Desktop-only Side Panel Skeleton */}
+          <div className="hidden lg:block lg:col-span-3 lg:col-start-10 xl:col-span-3 xl:col-start-10">
+            <div className="sticky top-24 space-y-4">
+              <Skeleton className={`h-48 w-full rounded-3xl ${theme.card}`} />
+              <Skeleton className={`h-96 w-full rounded-3xl ${theme.card}`} />
+            </div>
           </div>
-        </div>
         </div>
       </div>
     </div>
@@ -83,7 +84,15 @@ export function DashboardSkeleton() {
 }
 
 export function AdminSkeleton() {
-  const [themeId] = useState(getInitialTheme)
+  const [themeId, setThemeId] = useState('default')
+
+  useEffect(() => {
+    const saved = localStorage.getItem('bonify-theme')
+    if (saved && themes[saved]) {
+      setThemeId(saved)
+    }
+  }, [])
+
   const theme = getTheme(themeId).variants.Internet
 
   return (
@@ -115,7 +124,15 @@ export function AdminSkeleton() {
 }
 
 export function LeaderboardSkeleton() {
-  const [themeId] = useState(getInitialTheme)
+  const [themeId, setThemeId] = useState('default')
+
+  useEffect(() => {
+    const saved = localStorage.getItem('bonify-theme')
+    if (saved && themes[saved]) {
+      setThemeId(saved)
+    }
+  }, [])
+
   const theme = getTheme(themeId).variants.Internet
 
   return (
