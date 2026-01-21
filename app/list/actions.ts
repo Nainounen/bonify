@@ -31,11 +31,13 @@ export async function getLeaderboard(year?: number, month?: number) {
   const targetMonth = month || current.month
 
   // Get current user info to determine visibility
-  const { data: currentUserEmployee } = await adminClient
+  const { data: employeeData } = await adminClient
     .from('employees')
     .select('role, shop_id')
     .eq('id', user.id)
     .single()
+
+  const currentUserEmployee = employeeData as any
 
   let query = adminClient
     .from('employees')
