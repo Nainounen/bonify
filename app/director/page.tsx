@@ -3,7 +3,11 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { getRegionsWithStats } from './actions'
 import { DirectorView } from './director-view'
 
-export default async function DirectorPage() {
+export default async function DirectorPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -20,7 +24,11 @@ export default async function DirectorPage() {
     }
   }
 
-  const { regions, error } = await getRegionsWithStats()
+  const { year, month } = await searchParams
+  const y = year ? parseInt(year as string) : undefined
+  const m = month ? parseInt(month as string) : undefined
+
+  const { regions, error } = await getRegionsWithStats(y, m)
 
   if (error) {
     return <div className="p-8 text-red-500">Error loading director dashboard: {error}</div>

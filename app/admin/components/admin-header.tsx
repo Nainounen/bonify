@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { RefreshCw, Download, LayoutDashboard, Trophy, LogOut } from 'lucide-react'
 import Link from 'next/link'
 import { signOut } from '@/app/login/actions'
+import { DateFilter } from '@/components/date-filter'
 
 type AdminHeaderProps = {
   theme: any
@@ -33,6 +34,7 @@ export function AdminHeader({ theme, onExport, onRefresh }: AdminHeaderProps) {
             <Trophy className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
         </Link>
+        <DateFilter />
         <Button variant="outline" size="icon" onClick={onExport} className={`${theme.card} ${theme.cardBorder} ${theme.text.primary} hover:${theme.glass} h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}>
           <Download className="h-4 w-4 sm:h-5 sm:w-5" />
         </Button>

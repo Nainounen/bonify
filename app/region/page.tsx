@@ -3,7 +3,11 @@ import { redirect } from 'next/navigation'
 import { getRegionalOverview } from './actions'
 import { RegionalOverview } from './views/region-overview'
 
-export default async function RegionPage() {
+export default async function RegionPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -25,7 +29,11 @@ export default async function RegionPage() {
     redirect('/dashboard')
   }
 
-  const overviewData = await getRegionalOverview()
+  const { year, month } = await searchParams
+  const y = year ? parseInt(year as string) : undefined
+  const m = month ? parseInt(month as string) : undefined
+
+  const overviewData = await getRegionalOverview(y, m)
 
   if ('error' in overviewData) {
     return (

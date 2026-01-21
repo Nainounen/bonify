@@ -25,8 +25,11 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
+import { useRouter } from 'next/navigation'
+import { DateFilter } from '@/components/date-filter'
 
 export function RegionalOverview({ data, user }: { data: any, user: any }) {
+  const router = useRouter()
   const [isCreateShopOpen, setIsCreateShopOpen] = useState(false)
   const [isCreateManagerOpen, setIsCreateManagerOpen] = useState(false)
   const [selectedShopId, setSelectedShopId] = useState<string | null>(null)
@@ -119,6 +122,7 @@ export function RegionalOverview({ data, user }: { data: any, user: any }) {
     if (res.error) toast.error(res.error)
     else {
       toast.success('Shop created and manager assigned')
+      router.refresh()
       setIsCreateShopOpen(false)
       // Reset form
       setNewShopName('')
@@ -161,6 +165,7 @@ export function RegionalOverview({ data, user }: { data: any, user: any }) {
     if (res.error) toast.error(res.error)
     else {
       toast.success(managerMode === 'existing' ? 'Manager assigned' : 'Manager created')
+      router.refresh()
       setIsCreateManagerOpen(false)
       setManagerName('')
       setManagerEmail('')
@@ -192,6 +197,8 @@ export function RegionalOverview({ data, user }: { data: any, user: any }) {
                 <Trophy className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </Link>
+
+            <DateFilter className={`${theme.text.primary} bg-white/10 w-fit`} />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -232,7 +239,7 @@ export function RegionalOverview({ data, user }: { data: any, user: any }) {
             <h1 className={`text-3xl font-bold ${theme.text.primary}`}>
               {data.regionName} Region
             </h1>
-            <p className={theme.text.secondary}>Overview for {new Date(data.year, data.month - 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</p>
+            <p className={`${theme.text.secondary} mb-2`}>Overview for {new Date(data.year, data.month - 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</p>
           </div>
           <Dialog open={isCreateShopOpen} onOpenChange={(open) => {
             setIsCreateShopOpen(open)

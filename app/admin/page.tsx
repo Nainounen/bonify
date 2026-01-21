@@ -3,7 +3,11 @@ import { redirect } from 'next/navigation'
 import { getAdminStats, getUsers } from './actions'
 import { AdminView } from './admin-view'
 
-export default async function AdminPage() {
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -16,8 +20,12 @@ export default async function AdminPage() {
     redirect('/dashboard')
   }
 
+  const { year, month } = await searchParams
+  const y = year ? parseInt(year as string) : undefined
+  const m = month ? parseInt(month as string) : undefined
+
   const [stats, users] = await Promise.all([
-    getAdminStats(),
+    getAdminStats(y, m),
     getUsers()
   ])
 

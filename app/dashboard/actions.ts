@@ -51,7 +51,8 @@ export async function logSale(category: 'Wireless' | 'Wireline') {
   }
 }
 
-export async function getEmployeeStats() {
+
+export async function getEmployeeStats(year?: number, month?: number) {
   const supabase = await createClient()
   const adminClient = createAdminClient()
 
@@ -93,25 +94,27 @@ export async function getEmployeeStats() {
     employee = newEmployee
   }
 
-  // Get current period
-  const { year, month } = getCurrentPeriod()
+  // Get current period or use provided
+  const current = getCurrentPeriod()
+  const targetYear = year || current.year
+  const targetMonth = month || current.month
 
-  // Get current month's sales
+  // Get selected month's sales
   const { data: sales } = await supabase
     .from('sales')
     .select('*')
     .eq('employee_id', user.id)
-    .eq('year', year)
-    .eq('month', month)
+    .eq('year', targetYear)
+    .eq('month', targetMonth)
     .order('created_at', { ascending: false })
 
-  // Get current month's target
+  // Get selected month's target
   const { data: target } = await supabase
     .from('monthly_targets')
     .select('*')
     .eq('employee_id', user.id)
-    .eq('year', year)
-    .eq('month', month)
+    .eq('year', targetYear)
+    .eq('month', targetMonth)
     .single()
 
   // Count sales by category
@@ -163,8 +166,8 @@ export async function getEmployeeStats() {
     wirelessZER,
     wirelineZER,
     projectedBonus,
-    year,
-    month,
+    year: targetYear,
+    month: targetMonth,
     hasTarget: !!target,
   }
 }

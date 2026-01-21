@@ -4,9 +4,11 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { getCurrentPeriod, calculateEmployeeBonus, calculateShopGZER } from '@/lib/bonus-calculator'
 
-export async function getAdminStats() {
+export async function getAdminStats(yearInput?: number, monthInput?: number) {
   const supabase = createAdminClient()
-  const { year, month } = getCurrentPeriod()
+  const current = getCurrentPeriod()
+  const year = yearInput || current.year
+  const month = monthInput || current.month
 
   const { data: sales, error } = await supabase
     .from('sales')
@@ -42,7 +44,7 @@ export async function getAdminStats() {
 
   const salesByDate = Object.values(salesByDateMap).sort((a: any, b: any) =>
     new Date(a.date).getTime() - new Date(b.date).getTime()
-  ).slice(-7) // Last 7 days
+  )
 
   // Group sales by user, date, and category for individual user trend lines
   const salesByUserMap: any = {}
@@ -71,7 +73,7 @@ export async function getAdminStats() {
   const salesByUserAndDate = Object.values(salesByUserMap).map((userData: any) => {
     const dates = Object.keys(userData.salesByDate).sort((a, b) =>
       new Date(a).getTime() - new Date(b).getTime()
-    ).slice(-7)
+    )
 
     return {
       userName: userData.userName,

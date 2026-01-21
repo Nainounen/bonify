@@ -4,7 +4,11 @@ import { getEmployeeStats } from './actions'
 import { getShopEmployees, getShopTargets } from './shop-manager-actions'
 import { DashboardView } from '@/components/dashboard-view'
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -22,7 +26,11 @@ export default async function DashboardPage() {
     redirect('/list')
   }
 
-  const statsResult = await getEmployeeStats()
+  const { year, month } = await searchParams
+  const y = year ? parseInt(year as string) : undefined
+  const m = month ? parseInt(month as string) : undefined
+
+  const statsResult = await getEmployeeStats(y, m)
 
   if ('error' in statsResult || !statsResult.employee) {
     return <div>Error loading stats</div>
@@ -45,8 +53,8 @@ export default async function DashboardPage() {
   let shopData = null
   if (stats.employee.role === 'shop_manager') {
     const [employeesResult, targetsResult] = await Promise.all([
-      getShopEmployees(),
-      getShopTargets()
+      getShopEmployees(y, m),
+      getShopTargets(y, m)
     ])
 
     shopData = {
