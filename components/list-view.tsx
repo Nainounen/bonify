@@ -15,17 +15,37 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu"
 import { DateFilter } from '@/components/date-filter'
+import { useRouter, useSearchParams } from 'next/navigation'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 type ListViewProps = {
   user: any
   leaderboard: any[]
+  userContext?: {
+    role: string
+    regionId?: string
+    shopId?: string
+    availableShops?: { id: string, name: string }[]
+    currentFilter: string
+    currentShopFilter?: string
+  }
 }
 
-export function ListView({ user, leaderboard }: ListViewProps) {
+export function ListView({ user, leaderboard, userContext }: ListViewProps) {
   const [currentThemeId, setCurrentThemeId] = useState('default')
   const [view, setView] = useState<'all' | 'wireless' | 'wireline'>('all')
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
   // Load theme from localStorage on mount
   useEffect(() => {
@@ -34,6 +54,18 @@ export function ListView({ user, leaderboard }: ListViewProps) {
       setCurrentThemeId(savedTheme)
     }
   }, [])
+
+  const updateFilter = (filterType: string, shopId?: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('filter', filterType)
+    if (shopId) {
+      params.set('shopId', shopId)
+    } else {
+      params.delete('shopId')
+    }
+    router.push(`?${params.toString()}`)
+  }
+
 
   // Save theme to localStorage when changed
   const handleThemeChange = (themeId: string) => {
@@ -67,7 +99,7 @@ export function ListView({ user, leaderboard }: ListViewProps) {
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             {user.email !== 'list@admin.com' && (
               <Link href="/dashboard">
-                <Button variant="ghost" size="icon" className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-slate-500/10 h-9 w-9 sm:h-10 sm:w-10 touch-manipulation flex-shrink-0`}>
+                <Button variant="ghost" size="icon" className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-slate-500/10 h-9 w-9 sm:h-10 sm:w-10 touch-manipulation shrink-0`}>
                   <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </Link>
@@ -101,7 +133,7 @@ export function ListView({ user, leaderboard }: ListViewProps) {
                     className="cursor-pointer hover:bg-white/10 focus:bg-white/10"
                   >
                     <div className="flex items-center gap-2 w-full">
-                      <div className={`w-4 h-4 rounded-full bg-gradient-to-br ${t.icon}`} />
+                      <div className={`w-4 h-4 rounded-full bg-linear-to-br ${t.icon}`} />
                       <span className={currentThemeId === t.id ? 'font-bold text-white' : 'text-white/70'}>
                         {t.name}
                       </span>
@@ -129,6 +161,45 @@ export function ListView({ user, leaderboard }: ListViewProps) {
           <h1 className={`text-2xl sm:text-3xl md:text-4xl font-bold ${theme.text.primary} mb-1 sm:mb-2`}>Top Performers</h1>
           <p className={`${theme.text.muted} text-sm sm:text-base`}>See who's leading the sales charts</p>
         </div>
+
+        {/* Role-based Filter Controls */}
+        {userContext && (
+          <div className="flex flex-col sm:flex-row gap-3 mb-6 justify-center items-center">
+            <Select
+              value={userContext.currentFilter}
+              onValueChange={(val) => updateFilter(val)}
+            >
+              <SelectTrigger className="w-45 bg-slate-900/50 border-slate-700 text-white">
+                <SelectValue placeholder="Scope" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-slate-800 text-white">
+                <SelectItem value="my_shop">My Shop</SelectItem>
+                <SelectItem value="region">Whole Region</SelectItem>
+                {['regional_manager', 'director'].includes(userContext.role) && (
+                  <SelectItem value="specific_shop">Specific Shop...</SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+
+            {userContext.currentFilter === 'specific_shop' && userContext.availableShops && (
+              <Select
+                value={userContext.currentShopFilter || ''}
+                onValueChange={(val) => updateFilter('specific_shop', val)}
+              >
+                <SelectTrigger className="w-50 bg-slate-900/50 border-slate-700 text-white">
+                  <SelectValue placeholder="Select Shop" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-900 border-slate-800 text-white h-60">
+                  {userContext.availableShops.map((shop) => (
+                    <SelectItem key={shop.id} value={shop.id}>
+                      {shop.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+        )}
 
         {/* Tab Switcher */}
         <div className="flex justify-center mb-6">
@@ -197,7 +268,7 @@ export function ListView({ user, leaderboard }: ListViewProps) {
                           {employee.name}
                         </h3>
                         {isCurrentUser && (
-                          <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-medium uppercase tracking-wide ${theme.accent}/20 ${theme.primary} whitespace-nowrap flex-shrink-0`}>
+                          <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-medium uppercase tracking-wide ${theme.accent}/20 ${theme.primary} whitespace-nowrap shrink-0`}>
                             You
                           </span>
                         )}
@@ -213,7 +284,7 @@ export function ListView({ user, leaderboard }: ListViewProps) {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 sm:gap-4 text-right flex-shrink-0">
+                    <div className="flex items-center gap-2 sm:gap-4 text-right shrink-0">
                       {view === 'all' && (
                         <>
                           <div className="hidden md:block">
