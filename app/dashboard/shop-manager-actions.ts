@@ -6,11 +6,15 @@ import { getCurrentPeriod } from '@/lib/bonus-calculator'
 
 // --- Shop Manager Actions ---
 
-export async function getShopEmployees() {
+export async function getShopEmployees(year?: number, month?: number) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) return { error: 'Not authenticated' }
+
+  const current = getCurrentPeriod()
+  const targetYear = year || current.year
+  const targetMonth = month || current.month
 
   // Use adminClient to bypass RLS recursion and permissions issues
   const adminClient = createAdminClient()
@@ -29,8 +33,10 @@ export async function getShopEmployees() {
   // Get employees in this shop
   const { data: employees } = await adminClient
     .from('employees')
-    .select('*, sales(id, category, created_at)')
+    .select('*, sales(id, category, created_at, year, month)')
     .eq('shop_id', manager.shop_id)
+    .eq('sales.year', targetYear)
+    .eq('sales.month', targetMonth)
     .order('name')
 
   return { employees: employees || [] }
@@ -303,7 +309,7 @@ export async function setShopEmployeeTarget(params: {
   return { success: true }
 }
 
-export async function getShopTargets() {
+export async function getShopTargets(year?: number, month?: number) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -316,7 +322,9 @@ export async function getShopTargets() {
 
   if (!manager?.shop_id) return { targets: [] }
 
-  const { year, month } = getCurrentPeriod()
+  const current = getCurrentPeriod()
+  const targetYear = year || current.year
+  const targetMonth = month || current.month
 
   // Get employees ids first
   const { data: employeesData } = await adminClient.from('employees').select('id').eq('shop_id', manager.shop_id)
@@ -328,8 +336,8 @@ export async function getShopTargets() {
   const { data: targets } = await adminClient.from('monthly_targets')
     .select('*')
     .in('employee_id', ids)
-    .eq('year', year)
-    .eq('month', month)
+    .eq('year', targetYear)
+    .eq('month', targetMonth)
 
   return { targets: targets || [] }
 }

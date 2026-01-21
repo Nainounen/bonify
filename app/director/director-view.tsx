@@ -20,7 +20,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { DateFilter } from '@/components/date-filter'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { getCurrentPeriod } from '@/lib/bonus-calculator'
 
 type DirectorViewProps = {
   initialRegions: any[]
@@ -30,6 +31,13 @@ type DirectorViewProps = {
 
 export function DirectorView({ initialRegions, stats, user }: DirectorViewProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const { year: currentYear, month: currentMonth } = getCurrentPeriod()
+
+  const yearParam = searchParams.get('year')
+  const monthParam = searchParams.get('month')
+  const isHistorical = (yearParam && parseInt(yearParam) !== currentYear) || (monthParam && parseInt(monthParam) !== currentMonth)
+
   // Use initialRegions directly to ensure updates from router.refresh() are reflected
   const regions = initialRegions
 
@@ -238,7 +246,7 @@ export function DirectorView({ initialRegions, stats, user }: DirectorViewProps)
             <p className={`${theme.text.secondary}`}>Overview of all Regions and Performance</p>
           </div>
           <div className="flex items-center gap-2">
-            <DateFilter />
+            <DateFilter className={`${theme.glass} border ${theme.glassBorder} ${theme.text.primary}`} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button suppressHydrationWarning variant="ghost" size="icon" className={`${theme.glass} border ${theme.glassBorder} ${theme.text.primary} hover:opacity-80 transition-all`}>
@@ -409,126 +417,128 @@ export function DirectorView({ initialRegions, stats, user }: DirectorViewProps)
             <TabsContent value="regions">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold">All Regions</h2>
-                <Dialog open={isAddRegionOpen} onOpenChange={setIsAddRegionOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="bg-blue-600 hover:bg-blue-700">
-                      <Plus className="h-4 w-4 mr-2" /> Add Region
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-lg">
-                    <DialogHeader>
-                      <DialogTitle>Create New Region</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleCreateRegion} className="space-y-6 pt-4">
+                {!isHistorical && (
+                  <Dialog open={isAddRegionOpen} onOpenChange={setIsAddRegionOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="bg-blue-600 hover:bg-blue-700">
+                        <Plus className="h-4 w-4 mr-2" /> Add Region
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-lg">
+                      <DialogHeader>
+                        <DialogTitle>Create New Region</DialogTitle>
+                      </DialogHeader>
+                      <form onSubmit={handleCreateRegion} className="space-y-6 pt-4">
 
-                      <div className="space-y-2">
-                        <Label>Region Name</Label>
-                        <Input
-                          value={newRegionName}
-                          onChange={e => setNewRegionName(e.target.value)}
-                          placeholder="e.g. Zurich East"
-                          className="bg-slate-800 border-slate-700"
-                          required
-                        />
-                      </div>
+                        <div className="space-y-2">
+                          <Label>Region Name</Label>
+                          <Input
+                            value={newRegionName}
+                            onChange={e => setNewRegionName(e.target.value)}
+                            placeholder="e.g. Zurich East"
+                            className="bg-slate-800 border-slate-700"
+                            required
+                          />
+                        </div>
 
-                      <div className="border-t border-slate-800 pt-4">
-                        <Label className="mb-2 block text-base font-semibold">Assign Regional Manager (Required)</Label>
+                        <div className="border-t border-slate-800 pt-4">
+                          <Label className="mb-2 block text-base font-semibold">Assign Regional Manager (Required)</Label>
 
-                        <Tabs value={crTab} onValueChange={setCrTab} className="w-full">
-                          <TabsList className="grid w-full grid-cols-2 bg-slate-800 mb-4">
-                            <TabsTrigger value="existing">Existing Employee</TabsTrigger>
-                            <TabsTrigger value="new">Create New</TabsTrigger>
-                          </TabsList>
+                          <Tabs value={crTab} onValueChange={setCrTab} className="w-full">
+                            <TabsList className="grid w-full grid-cols-2 bg-slate-800 mb-4">
+                              <TabsTrigger value="existing">Existing Employee</TabsTrigger>
+                              <TabsTrigger value="new">Create New</TabsTrigger>
+                            </TabsList>
 
-                          <TabsContent value="existing" className="space-y-4">
-                            <div className="flex gap-2">
-                              <Input
-                                placeholder="Search existing employees..."
-                                value={crManagerQuery}
-                                onChange={e => setCrManagerQuery(e.target.value)}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    e.preventDefault() // Prevent form submission
-                                  }
-                                }}
-                                className="bg-slate-800 border-slate-700"
-                              />
-                              <Button type="button" onClick={() => { }} variant="secondary" className="cursor-default opacity-50">
-                                <Search className="h-4 w-4" />
-                              </Button>
-                            </div>
-
-                            {crSelectedManager ? (
-                              <div className="p-3 bg-indigo-900/40 border border-indigo-500/50 rounded flex justify-between items-center">
-                                <div>
-                                  <div className="font-bold text-white">{crSelectedManager.name}</div>
-                                  <div className="text-xs text-indigo-300">{crSelectedManager.email}</div>
-                                </div>
-                                <Button size="sm" variant="ghost" type="button" onClick={() => setCrSelectedManager(null)}>
-                                  Change
+                            <TabsContent value="existing" className="space-y-4">
+                              <div className="flex gap-2">
+                                <Input
+                                  placeholder="Search existing employees..."
+                                  value={crManagerQuery}
+                                  onChange={e => setCrManagerQuery(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault() // Prevent form submission
+                                    }
+                                  }}
+                                  className="bg-slate-800 border-slate-700"
+                                />
+                                <Button type="button" onClick={() => { }} variant="secondary" className="cursor-default opacity-50">
+                                  <Search className="h-4 w-4" />
                                 </Button>
                               </div>
-                            ) : (
-                              <div className="space-y-2 max-h-48 overflow-y-auto">
-                                {crManagerResults.map(user => (
-                                  <div key={user.id} className="p-2 bg-slate-800 rounded flex items-center justify-between border border-slate-700">
-                                    <div className="truncate mr-2">
-                                      <div className="font-medium text-sm">{user.name}</div>
-                                      <div className="text-xs text-slate-400">{user.email}</div>
-                                    </div>
-                                    <Button size="sm" type="button" onClick={() => setCrSelectedManager(user)}>
-                                      Select
-                                    </Button>
+
+                              {crSelectedManager ? (
+                                <div className="p-3 bg-indigo-900/40 border border-indigo-500/50 rounded flex justify-between items-center">
+                                  <div>
+                                    <div className="font-bold text-white">{crSelectedManager.name}</div>
+                                    <div className="text-xs text-indigo-300">{crSelectedManager.email}</div>
                                   </div>
-                                ))}
-                                {crManagerResults.length === 0 && crManagerQuery.length > 2 && (
-                                  <div className="text-center text-slate-500 text-sm py-2">No users found.</div>
-                                )}
+                                  <Button size="sm" variant="ghost" type="button" onClick={() => setCrSelectedManager(null)}>
+                                    Change
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="space-y-2 max-h-48 overflow-y-auto">
+                                  {crManagerResults.map(user => (
+                                    <div key={user.id} className="p-2 bg-slate-800 rounded flex items-center justify-between border border-slate-700">
+                                      <div className="truncate mr-2">
+                                        <div className="font-medium text-sm">{user.name}</div>
+                                        <div className="text-xs text-slate-400">{user.email}</div>
+                                      </div>
+                                      <Button size="sm" type="button" onClick={() => setCrSelectedManager(user)}>
+                                        Select
+                                      </Button>
+                                    </div>
+                                  ))}
+                                  {crManagerResults.length === 0 && crManagerQuery.length > 2 && (
+                                    <div className="text-center text-slate-500 text-sm py-2">No users found.</div>
+                                  )}
+                                </div>
+                              )}
+                            </TabsContent>
+
+                            <TabsContent value="new" className="space-y-4">
+                              <div className="space-y-2">
+                                <Label>Full Name</Label>
+                                <Input
+                                  value={crNewManager.name}
+                                  onChange={e => setCrNewManager({ ...crNewManager, name: e.target.value })}
+                                  className="bg-slate-800 border-slate-700"
+                                  placeholder="John Doe"
+                                />
                               </div>
-                            )}
-                          </TabsContent>
+                              <div className="space-y-2">
+                                <Label>Email</Label>
+                                <Input
+                                  type="email"
+                                  value={crNewManager.email}
+                                  onChange={e => setCrNewManager({ ...crNewManager, email: e.target.value })}
+                                  className="bg-slate-800 border-slate-700"
+                                  placeholder="john@swisscom.com"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Password</Label>
+                                <Input
+                                  type="password"
+                                  value={crNewManager.password}
+                                  onChange={e => setCrNewManager({ ...crNewManager, password: e.target.value })}
+                                  className="bg-slate-800 border-slate-700"
+                                  placeholder="Min. 6 characters"
+                                />
+                              </div>
+                            </TabsContent>
+                          </Tabs>
+                        </div>
 
-                          <TabsContent value="new" className="space-y-4">
-                            <div className="space-y-2">
-                              <Label>Full Name</Label>
-                              <Input
-                                value={crNewManager.name}
-                                onChange={e => setCrNewManager({ ...crNewManager, name: e.target.value })}
-                                className="bg-slate-800 border-slate-700"
-                                placeholder="John Doe"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Email</Label>
-                              <Input
-                                type="email"
-                                value={crNewManager.email}
-                                onChange={e => setCrNewManager({ ...crNewManager, email: e.target.value })}
-                                className="bg-slate-800 border-slate-700"
-                                placeholder="john@swisscom.com"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Password</Label>
-                              <Input
-                                type="password"
-                                value={crNewManager.password}
-                                onChange={e => setCrNewManager({ ...crNewManager, password: e.target.value })}
-                                className="bg-slate-800 border-slate-700"
-                                placeholder="Min. 6 characters"
-                              />
-                            </div>
-                          </TabsContent>
-                        </Tabs>
-                      </div>
-
-                      <Button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700">
-                        {loading ? 'Creating...' : 'Create Region & Assign Manager'}
-                      </Button>
-                    </form>
-                  </DialogContent>
-                </Dialog>
+                        <Button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700">
+                          {loading ? 'Creating...' : 'Create Region & Assign Manager'}
+                        </Button>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -564,19 +574,23 @@ export function DirectorView({ initialRegions, stats, user }: DirectorViewProps)
                                   <p className="text-xs text-slate-400 truncate">{region.manager.email}</p>
                                 </div>
                               </div>
-                              <Button size="icon" variant="ghost" onClick={() => handleAssignClick(region)}>
-                                <UserPlus className="h-4 w-4 text-slate-400" />
-                              </Button>
+                              {!isHistorical && (
+                                <Button size="icon" variant="ghost" onClick={() => handleAssignClick(region)}>
+                                  <UserPlus className="h-4 w-4 text-slate-400" />
+                                </Button>
+                              )}
                             </div>
                           ) : (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-full border-dashed border-slate-600 hover:border-slate-500 text-slate-400"
-                              onClick={() => handleAssignClick(region)}
-                            >
-                              <UserPlus className="h-4 w-4 mr-2" /> Assign Manager
-                            </Button>
+                            !isHistorical && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full border-dashed border-slate-600 hover:border-slate-500 text-slate-400"
+                                onClick={() => handleAssignClick(region)}
+                              >
+                                <UserPlus className="h-4 w-4 mr-2" /> Assign Manager
+                              </Button>
+                            )
                           )}
                         </div>
                       </div>

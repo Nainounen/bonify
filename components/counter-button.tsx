@@ -12,11 +12,13 @@ import { rateLimiter, RATE_LIMITS } from '@/lib/rate-limiter'
 export function CounterButton({
   category: controlledCategory,
   onCategoryChange,
-  theme
+  theme,
+  disabled
 }: {
   category?: 'Wireline' | 'Wireless',
   onCategoryChange?: (category: 'Wireline' | 'Wireless') => void,
-  theme?: GlobalTheme
+  theme?: GlobalTheme,
+  disabled?: boolean
 } = {}) {
   const [isPending, startTransition] = useTransition()
   const [isAnimating, setIsAnimating] = useState(false)
@@ -33,7 +35,7 @@ export function CounterButton({
     if ('vibrate' in navigator) {
       navigator.vibrate(10)
     }
-    
+
     // Check rate limit
     if (!rateLimiter.check('sale', RATE_LIMITS.SALE)) {
       const resetTime = Math.ceil(rateLimiter.getResetTime('sale', RATE_LIMITS.SALE) / 1000)
@@ -116,7 +118,7 @@ export function CounterButton({
 
       <button
         onClick={handleClick}
-        disabled={isPending}
+        disabled={isPending || disabled}
         className={`relative h-40 w-40 sm:h-48 sm:w-48 md:h-56 md:w-56 rounded-full font-bold transition-all active:scale-95 touch-manipulation ${isAnimating ? 'scale-95' : 'hover:scale-105'
           } ${currentVariant.buttonGradient} disabled:opacity-50 disabled:cursor-not-allowed`}
         style={{

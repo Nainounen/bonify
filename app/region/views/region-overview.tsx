@@ -198,6 +198,8 @@ export function RegionalOverview({ data, user }: { data: any, user: any }) {
               </Button>
             </Link>
 
+            <DateFilter className={`${theme.text.primary} bg-white/10 w-fit`} />
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button suppressHydrationWarning variant="ghost" size="icon" className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-white/10 h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}>
@@ -238,7 +240,6 @@ export function RegionalOverview({ data, user }: { data: any, user: any }) {
               {data.regionName} Region
             </h1>
             <p className={`${theme.text.secondary} mb-2`}>Overview for {new Date(data.year, data.month - 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</p>
-            <DateFilter className="bg-white/10 border-white/20 text-white" />
           </div>
           <Dialog open={isCreateShopOpen} onOpenChange={(open) => {
             setIsCreateShopOpen(open)

@@ -27,9 +27,10 @@ type ShopManagementTabProps = {
   employees: any[]
   targets: any[]
   theme: any
+  isHistorical?: boolean
 }
 
-export function ShopManagementTab({ employees, targets, theme }: ShopManagementTabProps) {
+export function ShopManagementTab({ employees, targets, theme, isHistorical }: ShopManagementTabProps) {
   const [isAddUserOpen, setIsAddUserOpen] = useState(false)
   const [isEditUserOpen, setIsEditUserOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -272,108 +273,112 @@ export function ShopManagementTab({ employees, targets, theme }: ShopManagementT
             <CardDescription className={theme.text.muted}>Manage your team and their monthly targets</CardDescription>
           </div>
           <div className="flex gap-2">
-            <Button
-              onClick={handleSaveTargets}
-              disabled={loading}
-              variant="outline"
-              className="border-slate-600 hover:bg-slate-800"
-            >
-              <Save className="mr-2 h-4 w-4" /> Save Targets
-            </Button>
+            {!isHistorical && (
+              <Button
+                onClick={handleSaveTargets}
+                disabled={loading}
+                variant="outline"
+                className="border-slate-600 hover:bg-slate-800"
+              >
+                <Save className="mr-2 h-4 w-4" /> Save Targets
+              </Button>
+            )}
 
-            <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                  <UserPlus className="mr-2 h-4 w-4" /> Add Employee
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Add Employee</DialogTitle>
-                </DialogHeader>
-                <Tabs defaultValue="new" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 bg-slate-800">
-                    <TabsTrigger value="new">New Account</TabsTrigger>
-                    <TabsTrigger value="existing">Existing Account</TabsTrigger>
-                  </TabsList>
+            {!isHistorical && (
+              <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    <UserPlus className="mr-2 h-4 w-4" /> Add Employee
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Add Employee</DialogTitle>
+                  </DialogHeader>
+                  <Tabs defaultValue="new" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 bg-slate-800">
+                      <TabsTrigger value="new">New Account</TabsTrigger>
+                      <TabsTrigger value="existing">Existing Account</TabsTrigger>
+                    </TabsList>
 
-                  <TabsContent value="new">
-                    <form onSubmit={handleAddUser} className="space-y-4 pt-4">
-                      <div className="space-y-2">
-                        <Label>Name</Label>
-                        <Input value={newName} onChange={e => setNewName(e.target.value)} required className="bg-slate-800 border-slate-700" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Email</Label>
-                        <Input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} required className="bg-slate-800 border-slate-700" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Password</Label>
-                        <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required className="bg-slate-800 border-slate-700" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
+                    <TabsContent value="new">
+                      <form onSubmit={handleAddUser} className="space-y-4 pt-4">
                         <div className="space-y-2">
-                          <Label>Role</Label>
-                          <Select value={newRole} onValueChange={(v: any) => setNewRole(v)}>
-                            <SelectTrigger className="bg-slate-800 border-slate-700">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                              <SelectItem value="internal_sales">Internal</SelectItem>
-                              <SelectItem value="external_sales">External</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <Label>Name</Label>
+                          <Input value={newName} onChange={e => setNewName(e.target.value)} required className="bg-slate-800 border-slate-700" />
                         </div>
                         <div className="space-y-2">
-                          <Label>Employment %</Label>
-                          <Input type="number" min="0" max="100" value={newEmploymentPercentage} onChange={e => setNewEmploymentPercentage(parseInt(e.target.value))} className="bg-slate-800 border-slate-700" />
+                          <Label>Email</Label>
+                          <Input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} required className="bg-slate-800 border-slate-700" />
                         </div>
-                      </div>
-                      <Button type="submit" className="w-full" disabled={loading}>Create Account</Button>
-                    </form>
-                  </TabsContent>
-
-                  <TabsContent value="existing" className="space-y-4 pt-4">
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Search by name..."
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                        className="bg-slate-800 border-slate-700"
-                      />
-                      <Button onClick={handleSearch} disabled={isSearching || searchQuery.length < 2}>
-                        {isSearching ? <div className="animate-spin h-4 w-4 border-2 border-white rounded-full border-t-transparent" /> : <Search className="h-4 w-4" />}
-                      </Button>
-                    </div>
-
-                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                      {searchResults.map(user => (
-                        <div key={user.id} className="p-3 bg-slate-800 rounded flex items-center justify-between">
-                          <div>
-                            <div className="font-medium">{user.name}</div>
-                            <div className="text-xs text-slate-400">{user.email}</div>
-                            <div className="text-xs text-slate-500">
-                              {user.shop_id ? `In shop: ${user.shops?.name || 'Unknown'}` : 'No Shop'}
-                            </div>
+                        <div className="space-y-2">
+                          <Label>Password</Label>
+                          <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required className="bg-slate-800 border-slate-700" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Role</Label>
+                            <Select value={newRole} onValueChange={(v: any) => setNewRole(v)}>
+                              <SelectTrigger className="bg-slate-800 border-slate-700">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                                <SelectItem value="internal_sales">Internal</SelectItem>
+                                <SelectItem value="external_sales">External</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
-                          <Button
-                            size="sm"
-                            disabled={!!user.shop_id}
-                            onClick={() => handleAddExisting(user.id)}
-                            variant={user.shop_id ? "secondary" : "default"}
-                          >
-                            {user.shop_id ? 'Assigned' : 'Add'}
-                          </Button>
+                          <div className="space-y-2">
+                            <Label>Employment %</Label>
+                            <Input type="number" min="0" max="100" value={newEmploymentPercentage} onChange={e => setNewEmploymentPercentage(parseInt(e.target.value))} className="bg-slate-800 border-slate-700" />
+                          </div>
                         </div>
-                      ))}
-                      {searchResults.length === 0 && searchQuery.length > 2 && !isSearching && (
-                        <div className="text-center text-slate-500 py-4">No users found</div>
-                      )}
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </DialogContent>
-            </Dialog>
+                        <Button type="submit" className="w-full" disabled={loading}>Create Account</Button>
+                      </form>
+                    </TabsContent>
+
+                    <TabsContent value="existing" className="space-y-4 pt-4">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Search by name..."
+                          value={searchQuery}
+                          onChange={e => setSearchQuery(e.target.value)}
+                          className="bg-slate-800 border-slate-700"
+                        />
+                        <Button onClick={handleSearch} disabled={isSearching || searchQuery.length < 2}>
+                          {isSearching ? <div className="animate-spin h-4 w-4 border-2 border-white rounded-full border-t-transparent" /> : <Search className="h-4 w-4" />}
+                        </Button>
+                      </div>
+
+                      <div className="space-y-2 max-h-60 overflow-y-auto">
+                        {searchResults.map(user => (
+                          <div key={user.id} className="p-3 bg-slate-800 rounded flex items-center justify-between">
+                            <div>
+                              <div className="font-medium">{user.name}</div>
+                              <div className="text-xs text-slate-400">{user.email}</div>
+                              <div className="text-xs text-slate-500">
+                                {user.shop_id ? `In shop: ${user.shops?.name || 'Unknown'}` : 'No Shop'}
+                              </div>
+                            </div>
+                            <Button
+                              size="sm"
+                              disabled={!!user.shop_id}
+                              onClick={() => handleAddExisting(user.id)}
+                              variant={user.shop_id ? "secondary" : "default"}
+                            >
+                              {user.shop_id ? 'Assigned' : 'Add'}
+                            </Button>
+                          </div>
+                        ))}
+                        {searchResults.length === 0 && searchQuery.length > 2 && !isSearching && (
+                          <div className="text-center text-slate-500 py-4">No users found</div>
+                        )}
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </DialogContent>
+              </Dialog>
+            )}
 
             {/* Edit User Dialog */}
             <Dialog open={isEditUserOpen} onOpenChange={setIsEditUserOpen}>
@@ -434,6 +439,7 @@ export function ShopManagementTab({ employees, targets, theme }: ShopManagementT
                             <Label className="text-xs text-slate-400 mb-1 block">Wireless Target</Label>
                             <Input
                               type="number"
+                              disabled={isHistorical}
                               className="h-8 bg-slate-900 border-slate-700 text-white"
                               value={localTargets[emp.id]?.wireless || 0}
                               onChange={e => setLocalTargets(prev => ({
@@ -446,6 +452,7 @@ export function ShopManagementTab({ employees, targets, theme }: ShopManagementT
                             <Label className="text-xs text-slate-400 mb-1 block">Wireline Target</Label>
                             <Input
                               type="number"
+                              disabled={isHistorical}
                               className="h-8 bg-slate-900 border-slate-700 text-white"
                               value={localTargets[emp.id]?.wireline || 0}
                               onChange={e => setLocalTargets(prev => ({
@@ -463,6 +470,7 @@ export function ShopManagementTab({ employees, targets, theme }: ShopManagementT
                             <Label className="text-xs text-slate-400 mb-1 block">YTD %</Label>
                             <Input
                               type="number"
+                              disabled={isHistorical}
                               className="h-8 bg-slate-900 border-slate-700 text-white"
                               value={localTargets[emp.id]?.shopManagerYtdPercentage || 0}
                               onChange={e => setLocalTargets(prev => ({
@@ -488,22 +496,26 @@ export function ShopManagementTab({ employees, targets, theme }: ShopManagementT
                     </div>
 
                     <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/20"
-                        onClick={() => openEditModal(emp)}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
-                        onClick={() => handleDeleteUser(emp.id, emp.name)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {!isHistorical && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/20"
+                            onClick={() => openEditModal(emp)}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                            onClick={() => handleDeleteUser(emp.id, emp.name)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}

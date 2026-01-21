@@ -11,7 +11,7 @@ import { signOut } from '@/app/login/actions'
 import { undoLastSale } from '@/app/dashboard/undo-actions'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { formatZER, formatCurrency, getZERColor } from '@/lib/bonus-calculator'
+import { formatZER, formatCurrency, getZERColor, getCurrentPeriod } from '@/lib/bonus-calculator'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,6 +36,10 @@ export function DashboardView({ stats, shopData }: DashboardViewProps) {
   const [currentThemeId, setCurrentThemeId] = useState('default')
   const [isPending, startTransition] = useTransition()
   const [mounted, setMounted] = useState(false)
+
+  // Determine if viewing history
+  const { year: currentYear, month: currentMonth } = getCurrentPeriod()
+  const isHistorical = stats.year !== currentYear || stats.month !== currentMonth
 
   // Default tab based on role? Or just default to 'my-stats'
   const isManager = stats.employee.role === 'shop_manager'
@@ -100,7 +104,6 @@ export function DashboardView({ stats, shopData }: DashboardViewProps) {
                   {new Date(stats.year, stats.month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                 </span>
               </div>
-              <DateFilter className="bg-white/10 border-white/20 text-white" />
             </div>
 
             {/* ZER Display */}
@@ -207,11 +210,14 @@ export function DashboardView({ stats, shopData }: DashboardViewProps) {
 
           {/* Counter Button - Prominent */}
           <div className="flex flex-col items-center justify-center mb-8 sm:mb-12">
-            <p className={`${theme.text.muted} text-xs sm:text-sm mb-4 sm:mb-6 uppercase tracking-wider`}>Tap to Log Sale</p>
+            {!isHistorical && (
+              <p className={`${theme.text.muted} text-xs sm:text-sm mb-4 sm:mb-6 uppercase tracking-wider`}>Tap to Log Sale</p>
+            )}
             <CounterButton
               category={category}
               onCategoryChange={setCategory}
               theme={globalTheme}
+              disabled={isHistorical}
             />
           </div>
 
@@ -415,11 +421,12 @@ export function DashboardView({ stats, shopData }: DashboardViewProps) {
               variant="ghost"
               size="icon"
               onClick={handleUndo}
-              disabled={isPending || stats.sales.length === 0}
+              disabled={isPending || stats.sales.length === 0 || isHistorical}
               className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-white/10 disabled:opacity-50 h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}
             >
               <Undo2 className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
+            <DateFilter className={`${theme.text.primary} bg-white/10`} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button suppressHydrationWarning variant="ghost" size="icon" className={`${theme.text.secondary} hover:${theme.text.primary} hover:bg-white/10 h-9 w-9 sm:h-10 sm:w-10 touch-manipulation`}>
@@ -471,6 +478,7 @@ export function DashboardView({ stats, shopData }: DashboardViewProps) {
                 employees={shopData.employees}
                 targets={shopData.targets}
                 theme={theme}
+                isHistorical={isHistorical}
               />
             </div>
           </TabsContent>

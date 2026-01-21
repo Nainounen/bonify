@@ -53,8 +53,8 @@ export default async function DashboardPage({
   let shopData = null
   if (stats.employee.role === 'shop_manager') {
     const [employeesResult, targetsResult] = await Promise.all([
-      getShopEmployees(),
-      getShopTargets()
+      getShopEmployees(y, m),
+      getShopTargets(y, m)
     ])
 
     shopData = {
